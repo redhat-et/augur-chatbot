@@ -1,0 +1,3 @@
+llama-stack==0.2.7
+geocoder
+python-dotenv

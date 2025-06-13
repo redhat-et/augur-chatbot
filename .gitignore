@@ -1,0 +1,9 @@
+.env
+__pycache__
+*.DS_Store
+
+# Prevent sensitive data from being committed
+**/*private-secret.yaml
+**/*private-secret.yml
+llama-stack-demos/
+mcp-server-demo/
