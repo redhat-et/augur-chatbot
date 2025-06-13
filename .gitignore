@@ -7,3 +7,9 @@ __pycache__
 **/*private-secret.yml
 llama-stack-demos/
 mcp-server-demo/
+test_agent.py
+tools.py
+register_augur_tools.py
+mcp_server.py
+chinook_ex.py
+Chinook_PostgreSql.sql
