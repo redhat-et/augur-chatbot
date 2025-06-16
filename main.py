@@ -13,14 +13,14 @@ from prompt_template import AUGUR_AGENT_PROMPT
 import logging
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.WARNING,
     format="%(asctime)s %(name)s %(levelname)s %(message)s",
 )
 
 # Enable debugging for the Stack client and its HTTPX/SSE transport
-logging.getLogger("llama_stack_client").setLevel(logging.DEBUG)
-logging.getLogger("httpx").setLevel(logging.DEBUG)
-logging.getLogger("websockets").setLevel(logging.DEBUG)
+logging.getLogger("llama_stack_client").setLevel(logging.WARNING)
+#logging.getLogger("httpx").setLevel(logging.DEBUG)
+#logging.getLogger("websockets").setLevel(logging.DEBUG)
 
 
 # --- Constants ---
@@ -95,7 +95,6 @@ parser.add_argument("-s", "--session-info-on-exit", help="Print agent session in
 parser.add_argument("-a", "--auto", help="Run preset examples automatically", action="store_true")
 args = parser.parse_args()
 
-# Model and base URL setup
 model = "llama3.2:3b-instruct-fp16"
 
 if args.remote:
@@ -119,12 +118,13 @@ instructions = """
 
 Step 1: understand database schema. 
 Step 2: User asks question. Understand question
-Step 3: Classify intent. Is it a frequently asked question? Yes - call the correct mcp::sql tool:
-- get_contributor_contact_info_by_affiliation 
+Step 3: Classify intent. Is it a frequently asked question? Yes - call the correct mcp::sql tool: 
 - get_top_contributors 
 - get_pr_reviewers 
-- get_top_languages_by_repo_group 
+- get_top_languages_by_repo_name
 - get_monthly_contributions
+- get_contributor_contact_info
+- get_contributor_affiliations
 Step 4: Not a frequently asked question? Generate and RUN the correct sql using execute_sql. Keep executing sql until you get the correct query.
 Step 5: Output answer to user.
 
@@ -181,9 +181,13 @@ agent = Agent(
 # Auto mode
 if args.auto:
     prompts = [
-        "List all repos in the database.",
-        "How many repos are in the database?",
-        "How many contributors are in the database?"
+        "Count the number of repos",
+        "Using FAQ, Get the top 10 contributors for all repos",
+        "Who are the top 10 contributors in project augur?",
+        "What is the monthly contribution activity for project augur in January 2024",
+        "Show me all the contributors in project augur affiliated with Red Hat",
+        "Using get_top_languages, what are the programming languages in project augur?",
+        "Who are the PR reviewers in project augur?"
     ]
     session_id = agent.create_session("AutoDemo")
     for i, prompt in enumerate(prompts):

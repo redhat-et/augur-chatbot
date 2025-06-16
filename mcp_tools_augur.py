@@ -42,21 +42,37 @@ def get_augur_core_schema() -> str:
         ORDER BY table_name, ordinal_position
     """)
 
-# Tool 1: Contributor Contact Info by Affiliation
+# Tool 1a: get contributor info by repo
 @mcp.tool()
-def get_contributor_contact_info_by_affiliation(repo_name: str, affiliation_keyword: str) -> list[dict]:
+def get_contributor_contact_info(repo_name: str) -> list[dict]:
     """
-    Returns contributor contact info for a given repo, filtered by affiliation keyword.
+    Returns contributor contact info (name and email) for a given repo.
     """
     sql = f"""
-        SELECT DISTINCT c.cntrb_full_name, c.cntrb_email, ca.ca_affiliation
+        SELECT DISTINCT c.cntrb_full_name, c.cntrb_email
+        FROM augur_data.commits cm
+        JOIN augur_data.repo r ON cm.repo_id = r.repo_id
+        JOIN augur_data.contributors c ON cm.cmt_ght_author_id = c.cntrb_id
+        WHERE r.repo_name = '{repo_name}'
+        LIMIT 50
+    """
+    return execute_sql(sql)
+
+# Tool 1b: get contributor affiliation by repo
+@mcp.tool()
+def get_contributor_affiliations(repo_name: str, affiliation_keyword: str) -> list[dict]:
+    """
+    Returns contributor names and affiliations for a given repo filtered by affiliation keyword.
+    """
+    sql = f"""
+        SELECT DISTINCT c.cntrb_full_name, ca.ca_affiliation
         FROM augur_data.commits cm
         JOIN augur_data.repo r ON cm.repo_id = r.repo_id
         JOIN augur_data.contributors c ON cm.cmt_ght_author_id = c.cntrb_id
         JOIN augur_data.contributor_affiliations ca ON c.cntrb_company = ca.ca_affiliation
         WHERE r.repo_name = '{repo_name}' AND ca.ca_affiliation ILIKE '%{affiliation_keyword}%'
         LIMIT 50
-        """
+    """
     return execute_sql(sql)
 
 # Tool 2: Top Contributors
@@ -89,37 +105,44 @@ def get_pr_reviewers(repo_name: str) -> list[dict]:
         """
     return execute_sql(sql)
 
-# Tool 4: Top Languages by Repo Group (using repo_labor.programming_language)
+# Tool 4: Top Languages by Repo Group
 @mcp.tool()
-def get_top_languages_by_repo_group(repo_group_id: int, limit: int = 5) -> list[dict]:
-    """
-    Returns most used programming languages in the specified repo group using repo_labor table.
-    """
+def get_top_languages_by_repo_name(repo_name: str, limit: int = 5) -> list[dict]:
+    repo_name = repo_name.replace("'", "''")  # Escape single quotes
     sql = f"""
-        SELECT rl.programming_language, COUNT(*) as usage_count
+        SELECT rl.programming_language, COUNT(*) AS usage_count
         FROM augur_data.repo_labor rl
         JOIN augur_data.repo r ON rl.repo_id = r.repo_id
-        WHERE r.repo_group_id = {repo_group_id} AND rl.programming_language IS NOT NULL
+        WHERE r.repo_name = '{repo_name}' AND rl.programming_language IS NOT NULL
         GROUP BY rl.programming_language
         ORDER BY usage_count DESC
         LIMIT {limit}
-        """
+    """
     return execute_sql(sql)
 
 # Tool 5: Monthly Contributions (based on cmt_author_timestamp)
 @mcp.tool()
-def get_monthly_contributions(month: int, year: int, repo_name: str = None) -> int:
+def get_monthly_contributions(repo_name: str, month: int, year: int) -> int:
     """
-    Returns number of commits in the given month and year. Optional: filter by repo.
+    Returns the number of commits to a specific repository in a given month and year.
+    Uses a timestamp range filter for better performance.
     """
-    repo_filter = f"AND r.repo_name = '{repo_name}'" if repo_name else ""
+    from calendar import monthrange
+    from datetime import datetime
+
+    # Get first and last day of the month
+    start_date = f"{year}-{month:02d}-01"
+    end_day = monthrange(year, month)[1]
+    end_date = f"{year}-{month:02d}-{end_day}"
+
     sql = f"""
         SELECT COUNT(*) as contribution_count
         FROM augur_data.commits cm
         JOIN augur_data.repo r ON cm.repo_id = r.repo_id
-        WHERE EXTRACT(MONTH FROM cm.cmt_author_timestamp) = {month}
-          AND EXTRACT(YEAR FROM cm.cmt_author_timestamp) = {year} {repo_filter}
-        """
+        WHERE r.repo_name = '{repo_name}'
+          AND cm.cmt_author_timestamp >= '{start_date}'
+          AND cm.cmt_author_timestamp < '{end_date}'::date + INTERVAL '1 day'
+    """
     return execute_sql(sql)
 
 
