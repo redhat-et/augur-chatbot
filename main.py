@@ -181,7 +181,7 @@ agent = Agent(
 # Auto mode
 if args.auto:
     prompts = [
-        "Count the number of repos",
+        "Count the number of repos using sql",
         "Using FAQ, Get the top 10 contributors for all repos",
         "Who are the top 10 contributors in project augur?",
         "What is the monthly contribution activity for project augur in January 2024",

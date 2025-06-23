@@ -1,5 +1,3 @@
-# main.py
-
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client import LlamaStackClient
@@ -9,33 +7,30 @@ import os
 from dotenv import load_dotenv
 import psycopg2
 import json
-
-import logging
+from schema_rag import get_schema_context  # <- RAG schema context function
+import time
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.WARNING,
     format="%(asctime)s %(name)s %(levelname)s %(message)s",
 )
 
-# Enable debugging for the Stack client and its HTTPX/SSE transport
-logging.getLogger("llama_stack_client").setLevel(logging.DEBUG)
-logging.getLogger("httpx").setLevel(logging.DEBUG)
-logging.getLogger("websockets").setLevel(logging.DEBUG)
+logging.getLogger("llama_stack_client").setLevel(logging.WARNING)
 
-
-# --- Constants ---
-TABLE_DESCRIPTIONS = {
-    "repo": "Stores GitHub repository metadata, including names, URLs, and creation dates. Each repository has a unique `repo_id`.",
-    "contributors": "Tracks GitHub contributors, their unique IDs (`cntrb_id`), and GitHub login names (`gh_login`).",
-    "commits": "Holds commit-level metadata. Links to contributors via `cmt_ght_author_id` and repositories via `repo_id`.",
-    "pull_requests": "Logs pull request activity and metadata such as creation date, status, and repository.",
-    "pull_request_reviews": "Contains review events linking to `pull_request_id` and `cntrb_id`.",
-    "contributor_affiliations": "Maps contributors to organization affiliations via `ca_id` and `ca_affiliation`.",
-    "repo_groups": "Groups multiple repositories into clusters using `rg_id`."
-}
-
+'''
 
 def def_schema():
+    important_tables = {
+        "repo",
+        "contributors",
+        "commits",
+        "pull_requests",
+        "pull_request_reviews",
+        "contributor_affiliations",
+        "repo_groups",
+        "contributor_repo"
+    }
+
     conn = psycopg2.connect(os.environ["DATABASE_URI"])
     cur = conn.cursor()
 
@@ -50,11 +45,11 @@ def def_schema():
 
     schema_dict = {}
     for table, column, dtype in rows:
-        schema_dict.setdefault(table, []).append(f"{column} ({dtype})")
+        if table in important_tables:
+            schema_dict.setdefault(table, []).append(f"{column} ({dtype})")
 
-    # Format as string
     schema_text = "\n".join(
-        f"- {table}: " + ", ".join(columns)
+        f"Table: {table}\n- " + "\n- ".join(columns) + "\n"
         for table, columns in schema_dict.items()
     )
 
@@ -63,13 +58,11 @@ def def_schema():
 
     return schema_text
 
-def describe_schema_tool(input=None):
-    return def_schema()
 
-# Load environment variables
+    '''
+
 load_dotenv()
 
-# Set up logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 stream_handler = logging.StreamHandler()
@@ -78,72 +71,45 @@ formatter = logging.Formatter('%(message)s')
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
-# CLI arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-r", "--remote", help="Use remote LlamaStack server", action="store_true")
 parser.add_argument("-s", "--session-info-on-exit", help="Print agent session info on exit", action="store_true")
 parser.add_argument("-a", "--auto", help="Run preset examples automatically", action="store_true")
 args = parser.parse_args()
 
-# Model and base URL setup
-model = "meta-llama/Llama-3.2-3B-Instruct"
+model = "llama3.2:3b-instruct-fp16"
 
-if args.remote:
-    base_url = os.getenv("REMOTE_BASE_URL")
-else:
-    base_url = "http://localhost:8321"
-
+base_url = os.getenv("REMOTE_BASE_URL") if args.remote else "http://localhost:8321"
 client = LlamaStackClient(base_url=base_url)
 logger.info(f"✅ Connected to Llama Stack server @ {base_url}")
 
-schema = def_schema()
-table_descriptions = json.dumps(TABLE_DESCRIPTIONS, indent=2)
+#schema = def_schema()
+#table_descriptions = json.dumps(TABLE_DESCRIPTIONS, indent=2)
 
-# Agent instructions
+instructions = """
+Always prefix tables with augur_data. For example, augur_data.table
 
-'''
-instructions = f"""
-You are a helpful and precise assistant with access to a PostgreSQL database via MCP tools:
-- list_schemas
-- list_objects
-- execute_sql
-- get_object_details
-- explain_query
+Step 1: Understand the user's question. Identify key filters, entities, and metrics.
 
-Full schema:
-{schema}
+Step 2: Use RAG to retrieve relevant schema context (top K tables). Use this to inform SQL generation.
 
-Behavior guidelines:
-1. Table and column names are lowercase.
-2. Schema is always augur_data.
-3. Always execute your SQL after generating it.
-4. Retry with edits if the SQL fails.
-5. Use joins across commits, contributors, and affiliations to map contributions.
+Step 3: Classify intent. Is it a frequently asked question? Yes - call the correct mcp::sql tool:
+- get_top_contributors
+- get_pr_reviewers
+- get_top_languages_by_repo_name
+- get_monthly_contributions
+- get_contributor_contact_info
+- get_contributor_affiliations
 
-Example prompt:
-User: How many repos are in the database?
-Execute the correct SQL command and output the answer.
-"""
-'''
-instructions = f"""
-You are an AI assistant with one tool available:
-- mcp::postgres.execute_sql(sql: str) -> JSON rows
+Step 4: Not a frequently asked question? Generate and RUN the correct SQL using execute_sql.
+- Use the RAG schema context.
+- Use correct JOINs and WHERE clauses.
+- Keep executing and refining until the SQL works.
 
-When you need to query the augur_data schema, emit exactly one JSON tool call, for example:
-```json
-{{ "tool": "mcp::postgres", "args": {{ "sql": "SELECT COUNT(*) FROM augur_data.repo;" }} }}
-After the tool returns its JSON result, produce a clean natural-language answer.
-For instance, if the result is [{{"count": 42}}], respond:
+Step 5: Output the answer to the user.
 
-“There are 42 repositories in the database.”
+Always execute the SQL if it is not a tool-based query. Do not just output the SQL.
 
-Important:
-
-Do not print raw SQL or any extra text when calling the tool.
-
-Only emit the JSON object, wait for the tool_result, then answer.
-
-All SQL must target tables in the augur_data schema.
 """
 
 agent = Agent(
@@ -155,41 +121,37 @@ agent = Agent(
     sampling_params={"max_tokens": 4096, "strategy": {"type": "greedy"}},
 )
 
-
-
-# Auto mode
-if args.auto:
-    prompts = [
-        "List all repos in the database.",
-        "How many repos are in the database?",
-        "How many contributors are in the database?"
-    ]
-    session_id = agent.create_session("AutoDemo")
-    for i, prompt in enumerate(prompts):
-        print(f"\nUSER: {prompt}")
-        turn = agent.create_turn(
-            messages=[{"role": "user", "content": prompt}],
-            session_id=session_id,
-            stream=True,
-        )
-        for log in EventLogger().log(turn):
-            log.print()
-    exit()
-
-# Manual mode
 session_id = agent.create_session("ManualSession")
+
 while True:
     user_input = input(">>> ").strip()
+    time.sleep(2)
+
     if user_input.lower() in ["/bye", "exit"]:
         if args.session_info_on_exit:
             info = client.agents.session.retrieve(session_id=session_id, agent_id=agent.agent_id)
             print(info.to_dict())
         break
 
+    # Get relevant schema for the question
+    rag_context = get_schema_context(user_input)
+    schema_context_str = "\n".join(f"- {line}" for line in rag_context)
+
+    # Inject schema + question into a single user message
+    full_prompt = f"""
+You may use the following schema context to write correct SQL. Always prefix tables with augur_data
+
+{schema_context_str}
+
+User question: {user_input}
+    """
+
     turn = agent.create_turn(
         session_id=session_id,
-        messages=[{"role": "user", "content": user_input}],
+        messages=[{"role": "user", "content": full_prompt}],
         stream=True,
     )
+
     for log in EventLogger().log(turn):
         log.print()
+
