@@ -112,6 +112,9 @@ Always execute the SQL if it is not a tool-based query. Do not just output the S
 
 """
 
+schema_context = get_schema_context("repo")
+print("🔍 Schema Context:\n", schema_context)
+
 agent = Agent(
     client=client,
     model=model,
@@ -120,6 +123,8 @@ agent = Agent(
     tool_config={"tool_choice": "auto"},
     sampling_params={"max_tokens": 4096, "strategy": {"type": "greedy"}},
 )
+
+'''
 
 session_id = agent.create_session("ManualSession")
 
@@ -154,4 +159,7 @@ User question: {user_input}
 
     for log in EventLogger().log(turn):
         log.print()
+
+
+        '''
 
