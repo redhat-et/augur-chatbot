@@ -70,7 +70,7 @@ def embed_and_save():
     with open(EMBED_PATH, "wb") as f:
         pickle.dump((embeddings, table_names, descriptions), f)
 
-    print(f"✅ Saved embeddings to {EMBED_PATH}")
+    print(f" Saved embeddings to {EMBED_PATH}")
 
 # Given a user query, return relevant table descriptions
 def get_schema_context(query, top_k=5):
@@ -84,7 +84,7 @@ def get_schema_context(query, top_k=5):
     distances, indices = knn.kneighbors([query_embedding])
     return [descriptions[i] for i in indices[0]]
 
-# CLI usage
+# CLI
 if __name__ == "__main__":
     import sys
 
@@ -99,5 +99,5 @@ if __name__ == "__main__":
 
     else:
         print("Usage:")
-        print("  python schema_rag.py embed        # Build and save schema embeddings")
-        print("  python schema_rag.py ask <query>  # Get relevant schema for a question")
+        print("  python schema_rag.py embed")
+        print("  python schema_rag.py ask <query>  ")

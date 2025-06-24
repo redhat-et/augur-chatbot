@@ -89,18 +89,6 @@
     "data_collection_date (timestamp without time zone)",
     "cntrb_id (uuid)"
   ],
-  "contributors_aliases": [
-    "cntrb_alias_id (bigint)",
-    "canonical_email (character varying)",
-    "alias_email (character varying)",
-    "cntrb_active (smallint)",
-    "cntrb_last_modified (timestamp without time zone)",
-    "tool_source (character varying)",
-    "tool_version (character varying)",
-    "data_source (character varying)",
-    "data_collection_date (timestamp without time zone)",
-    "cntrb_id (uuid)"
-  ],
   "issue_assignees": [
     "issue_assignee_id (bigint)",
     "issue_id (bigint)",
@@ -176,19 +164,6 @@
     "data_source (character varying)",
     "data_collection_date (timestamp without time zone)",
     "cntrb_id (uuid)"
-  ],
-  "message_sentiment": [
-    "msg_analysis_id (bigint)",
-    "msg_id (bigint)",
-    "worker_run_id (bigint)",
-    "sentiment_score (double precision)",
-    "reconstruction_error (double precision)",
-    "novelty_flag (boolean)",
-    "feedback_flag (boolean)",
-    "tool_source (character varying)",
-    "tool_version (character varying)",
-    "data_source (character varying)",
-    "data_collection_date (timestamp without time zone)"
   ],
   "pull_request_assignees": [
     "pr_assignee_map_id (bigint)",
@@ -348,25 +323,6 @@
     "data_source (character varying)",
     "data_collection_date (timestamp without time zone)",
     "pr_augur_contributor_id (uuid)"
-  ],
-  "releases": [
-    "release_id (character)",
-    "repo_id (bigint)",
-    "release_name (character varying)",
-    "release_description (character varying)",
-    "release_author (character varying)",
-    "release_created_at (timestamp without time zone)",
-    "release_published_at (timestamp without time zone)",
-    "release_updated_at (timestamp without time zone)",
-    "release_is_draft (boolean)",
-    "release_is_prerelease (boolean)",
-    "release_tag_name (character varying)",
-    "release_url (character varying)",
-    "tag_only (boolean)",
-    "tool_source (character varying)",
-    "tool_version (character varying)",
-    "data_source (character varying)",
-    "data_collection_date (timestamp without time zone)"
   ],
   "repo": [
     "repo_id (bigint)",
