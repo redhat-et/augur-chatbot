@@ -112,8 +112,6 @@ Always execute the SQL if it is not a tool-based query. Do not just output the S
 
 """
 
-schema_context = get_schema_context("repo")
-print("🔍 Schema Context:\n", schema_context)
 
 agent = Agent(
     client=client,
@@ -123,8 +121,6 @@ agent = Agent(
     tool_config={"tool_choice": "auto"},
     sampling_params={"max_tokens": 4096, "strategy": {"type": "greedy"}},
 )
-
-'''
 
 session_id = agent.create_session("ManualSession")
 
@@ -140,16 +136,15 @@ while True:
 
     # Get relevant schema for the question
     rag_context = get_schema_context(user_input)
-    schema_context_str = "\n".join(f"- {line}" for line in rag_context)
+    context_str = "\n".join(f"- {line}" for line in rag_context)
 
-    # Inject schema + question into a single user message
+    # Inject context into user prompt
     full_prompt = f"""
-You may use the following schema context to write correct SQL. Always prefix tables with augur_data
+    You may use the following schema context to answer the user's question.
+    {context_str}
 
-{schema_context_str}
-
-User question: {user_input}
-    """
+    User question: {user_input}
+        """
 
     turn = agent.create_turn(
         session_id=session_id,
@@ -160,6 +155,4 @@ User question: {user_input}
     for log in EventLogger().log(turn):
         log.print()
 
-
-        '''
 
