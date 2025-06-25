@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 import psycopg2
 import json
-from schema_rag import get_schema_context  # <- RAG schema context function
+from schema_rag import get_schema_context, get_relevant_tables  # updated RAG imports
 import time
 
 logging.basicConfig(
@@ -57,9 +57,7 @@ def def_schema():
     conn.close()
 
     return schema_text
-
-
-    '''
+'''
 
 load_dotenv()
 
@@ -81,43 +79,27 @@ model = "llama3.2:3b-instruct-fp16"
 
 base_url = os.getenv("REMOTE_BASE_URL") if args.remote else "http://localhost:8321"
 client = LlamaStackClient(base_url=base_url)
-logger.info(f"✅ Connected to Llama Stack server @ {base_url}")
-
-#schema = def_schema()
-#table_descriptions = json.dumps(TABLE_DESCRIPTIONS, indent=2)
+logger.info(f" Connected to Llama Stack server @ {base_url}")
 
 instructions = """
-Always prefix tables with augur_data. For example, augur_data.table
-
-Step 1: Understand the user's question. Identify key filters, entities, and metrics.
-
-Step 2: Use RAG to retrieve relevant schema context (top K tables). Use this to inform SQL generation.
-
-Step 3: Classify intent. Is it a frequently asked question? Yes - call the correct mcp::sql tool:
-- get_top_contributors
-- get_pr_reviewers
+Step 1: User asks a quesion. Understand the question
+Step 2: Retrieve relevant schema context tables and columns
+Step 3: Classify intent. Is it a frequently asked question? Yes - call the correct mcp::sql tool: 
+- get_top_contributors 
+- get_pr_reviewers 
 - get_top_languages_by_repo_name
 - get_monthly_contributions
 - get_contributor_contact_info
 - get_contributor_affiliations
-
-Step 4: Not a frequently asked question? Generate and RUN the correct SQL using execute_sql.
-- Use the RAG schema context.
-- Use correct JOINs and WHERE clauses.
-- Keep executing and refining until the SQL works.
-
-Step 5: Output the answer to the user.
-
-Always execute the SQL if it is not a tool-based query. Do not just output the SQL.
-
+Step 4: If the question does not match a known tool, always generate and run the correct SQL using execute_sql. 
+You must only use tables and columns that appear in the schema context.
 """
-
 
 agent = Agent(
     client=client,
     model=model,
     instructions=instructions,
-    tools=["mcp::postgres", "mcp::sql"],
+    tools=["mcp::sql"],
     tool_config={"tool_choice": "auto"},
     sampling_params={"max_tokens": 4096, "strategy": {"type": "greedy"}},
 )
@@ -134,9 +116,8 @@ while True:
             print(info.to_dict())
         break
 
-    # Get relevant schema for the question
-    rag_context = get_schema_context(user_input)
-    context_str = "\n".join(f"- {line}" for line in rag_context)
+    # 🔍 Step 2: Get full schema context
+    context_str = get_schema_context(user_input)
 
     # Inject context into user prompt
     full_prompt = f"""
@@ -144,7 +125,10 @@ while True:
     {context_str}
 
     User question: {user_input}
-        """
+    """
+       # 🔍 Step 1: Retrieve relevant tables (for debugging)
+    debug_tables = get_relevant_tables(user_input)
+    logger.info(f">>> [DEBUG] Relevant tables selected by embeddings: \n" + full_prompt)
 
     turn = agent.create_turn(
         session_id=session_id,
@@ -154,5 +138,3 @@ while True:
 
     for log in EventLogger().log(turn):
         log.print()
-
-
