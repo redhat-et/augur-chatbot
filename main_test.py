@@ -93,7 +93,24 @@ Step 3: Classify intent. Is it a frequently asked question? Yes - call the corre
 - get_contributor_affiliations
 Step 4: If the question does not match a known tool, always generate and run the correct SQL using execute_sql. 
 You must only use tables and columns that appear in the schema context.
+
 """
+'''
+maybe the first thing i can focus on is: can we legitimately just generate and execute the sql?
+remove all the mcp::sql tools for faq
+just use execute sql.
+
+instruction string:
+You are a SQL expert using the execute_sql tool. Here is your workflow:
+1) User asks a question
+2) Retrieve relevant tables and columns from the database
+3) Generate SQL to answer the question. Do not make up columns or tables
+4) Execute against the database.
+
+'''
+
+
+
 
 agent = Agent(
     client=client,
