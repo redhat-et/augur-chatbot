@@ -3,7 +3,6 @@
     "columns": [
       "cmt_id",
       "repo_id",
-      "cmt_commit_hash",
       "cmt_author_name",
       "cmt_author_raw_email",
       "cmt_author_email",
@@ -16,7 +15,6 @@
       "cmt_committer_affiliation",
       "cmt_added",
       "cmt_removed",
-      "cmt_whitespace",
       "cmt_filename",
       "cmt_date_attempted",
       "cmt_ght_committer_id",
@@ -24,10 +22,6 @@
       "cmt_committer_timestamp",
       "cmt_author_timestamp",
       "cmt_author_platform_username",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
       "cmt_ght_author_id"
     ],
     "description": "Use to track commits per author, affiliation, and date."
@@ -40,9 +34,6 @@
       "ca_last_used",
       "ca_affiliation",
       "ca_active",
-      "tool_source",
-      "tool_version",
-      "data_source",
       "data_collection_date"
     ],
     "description": "Links contributors to their companies over time. Use to understand corporate participation and affiliation-based queries."
@@ -55,10 +46,6 @@
       "cntrb_company",
       "cntrb_created_at",
       "cntrb_type",
-      "cntrb_fake",
-      "cntrb_deleted",
-      "cntrb_long",
-      "cntrb_lat",
       "cntrb_country_code",
       "cntrb_state",
       "cntrb_city",
@@ -69,9 +56,6 @@
       "gh_login",
       "gh_url",
       "gh_html_url",
-      "gh_node_id",
-      "gh_avatar_url",
-      "gh_gravatar_id",
       "gh_followers_url",
       "gh_following_url",
       "gh_gists_url",
@@ -89,47 +73,9 @@
       "gl_username",
       "gl_full_name",
       "gl_id",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
       "cntrb_id"
     ],
     "description": "Holds contributor identities, GitHub and GitLab profiles, and location data. Useful for affiliation, geography, and contributor activity queries."
-  },
-  "issue_assignees": {
-    "columns": [
-      "issue_assignee_id",
-      "issue_id",
-      "repo_id",
-      "issue_assignee_src_id",
-      "issue_assignee_src_node",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
-      "cntrb_id"
-    ]
-  },
-  "issue_events": {
-    "columns": [
-      "event_id",
-      "issue_id",
-      "repo_id",
-      "action",
-      "action_commit_hash",
-      "created_at",
-      "node_id",
-      "node_url",
-      "platform_id",
-      "issue_event_src_id",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
-      "cntrb_id"
-    ],
-    "description": "Captures changes to issues (opened, closed, reopened) over time. Useful for measuring responsiveness and activity patterns."
   },
   "issues": {
     "columns": [
@@ -155,144 +101,10 @@
       "gh_issue_number",
       "gh_issue_id",
       "gh_user_id",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
       "reporter_id",
       "cntrb_id"
     ],
     "description": "Tracks issue content opened in repos, including title, body, timestamps, and whether they are linked to pull requests. Use for engagement analysis."
-  },
-  "message": {
-    "columns": [
-      "msg_id",
-      "rgls_id",
-      "platform_msg_id",
-      "platform_node_id",
-      "repo_id",
-      "msg_text",
-      "msg_timestamp",
-      "msg_sender_email",
-      "msg_header",
-      "pltfrm_id",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
-      "cntrb_id"
-    ]
-  },
-  "pull_request_assignees": {
-    "columns": [
-      "pr_assignee_map_id",
-      "pull_request_id",
-      "repo_id",
-      "pr_assignee_src_id",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
-      "contrib_id"
-    ]
-  },
-  "pull_request_commits": {
-    "columns": [
-      "pr_cmt_id",
-      "pull_request_id",
-      "repo_id",
-      "pr_cmt_sha",
-      "pr_cmt_node_id",
-      "pr_cmt_message",
-      "pr_cmt_comments_url",
-      "pr_cmt_timestamp",
-      "pr_cmt_author_email",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
-      "pr_cmt_author_cntrb_id"
-    ]
-  },
-  "pull_request_events": {
-    "columns": [
-      "pr_event_id",
-      "pull_request_id",
-      "repo_id",
-      "action",
-      "action_commit_hash",
-      "created_at",
-      "issue_event_src_id",
-      "node_id",
-      "node_url",
-      "platform_id",
-      "pr_platform_event_id",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
-      "cntrb_id"
-    ]
-  },
-  "pull_request_files": {
-    "columns": [
-      "pr_file_id",
-      "pull_request_id",
-      "repo_id",
-      "pr_file_additions",
-      "pr_file_deletions",
-      "pr_file_path",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date"
-    ]
-  },
-  "pull_request_labels": {
-    "columns": [
-      "pr_label_id",
-      "pull_request_id",
-      "repo_id",
-      "pr_src_id",
-      "pr_src_node_id",
-      "pr_src_url",
-      "pr_src_description",
-      "pr_src_color",
-      "pr_src_default_bool",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date"
-    ]
-  },
-  "pull_request_message_ref": {
-    "columns": [
-      "pr_msg_ref_id",
-      "pull_request_id",
-      "repo_id",
-      "msg_id",
-      "pr_message_ref_src_comment_id",
-      "pr_message_ref_src_node_id",
-      "pr_issue_url",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date"
-    ]
-  },
-  "pull_request_reviewers": {
-    "columns": [
-      "pr_reviewer_map_id",
-      "pull_request_id",
-      "pr_source_id",
-      "repo_id",
-      "pr_reviewer_src_id",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
-      "cntrb_id"
-    ]
   },
   "pull_request_reviews": {
     "columns": [
@@ -309,10 +121,6 @@
       "pr_review_pull_request_url",
       "pr_review_commit_id",
       "platform_id",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
       "cntrb_id"
     ],
     "description": "Contains code review feedback on pull requests, separated by repo_id."
@@ -354,10 +162,6 @@
       "pr_src_commits_url",
       "pr_src_statuses_url",
       "pr_src_author_association",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
       "pr_augur_contributor_id"
     ],
     "description": "Stores pull request-level data including merge timestamps, status, author info, and diff URLs. Core to measuring collaboration and merge activity. Separated by repo_id."
@@ -379,26 +183,9 @@
       "updated_at",
       "repo_archived_date_collected",
       "repo_archived",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
       "repo_src_id"
     ],
     "description": "Main table for repository metadata including name, URL, primary, and project ownership. Central for most repo-level queries. Stores by repo_name and repo_id"
-  },
-  "repo_dependencies": {
-    "columns": [
-      "repo_dependencies_id",
-      "repo_id",
-      "dep_name",
-      "dep_count",
-      "dep_language",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date"
-    ]
   },
   "repo_deps_libyear": {
     "columns": [
@@ -412,26 +199,9 @@
       "latest_version",
       "current_release_date",
       "latest_release_date",
-      "libyear",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date"
+      "libyear"
     ],
     "description": "Tracks dependency versions and release timelines to calculate libyear technical debt. Useful for security and maintenance queries."
-  },
-  "repo_deps_scorecard": {
-    "columns": [
-      "repo_deps_scorecard_id",
-      "repo_id",
-      "name",
-      "score",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date",
-      "scorecard_check_details"
-    ]
   },
   "repo_groups": {
     "columns": [
@@ -441,11 +211,7 @@
       "rg_website",
       "rg_recache",
       "rg_last_modified",
-      "rg_type",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date"
+      "rg_type"
     ],
     "description": "Defines repository collections by name and type. Often used to group CNCF projects or organizational segments."
   },
@@ -481,11 +247,7 @@
       "pull_request_count",
       "pull_requests_open",
       "pull_requests_closed",
-      "pull_requests_merged",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date"
+      "pull_requests_merged"
     ],
     "description": "Holds summarized metadata per repo like number of issues, stars, forks, and pull requests. Useful for summary statistics and comparisons. Separated by repo_id."
   },
@@ -503,36 +265,8 @@
       "comment_lines",
       "blank_lines",
       "code_complexity",
-      "repo_url",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date"
+      "repo_url"
     ],
     "description": "Estimates coding effort per repo using lines of code and complexity metrics. Helpful for productivity or labor cost modeling, and programming language of project. Separated by repo_id."
-  },
-  "repo_meta": {
-    "columns": [
-      "repo_id",
-      "rmeta_id",
-      "rmeta_name",
-      "rmeta_value",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date"
-    ]
-  },
-  "repo_stats": {
-    "columns": [
-      "repo_id",
-      "rstat_id",
-      "rstat_name",
-      "rstat_value",
-      "tool_source",
-      "tool_version",
-      "data_source",
-      "data_collection_date"
-    ]
   }
 }

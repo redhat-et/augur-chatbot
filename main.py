@@ -171,7 +171,7 @@ agent = Agent(
     client=client,
     model=model,
     instructions=instructions,
-    tools=["mcp::postgres", "mcp::sql"],
+    tools=["mcp::sql"],
     tool_config={"tool_choice": "auto"},
     sampling_params={"max_tokens": 4096, "strategy": {"type": "greedy"}},
 )

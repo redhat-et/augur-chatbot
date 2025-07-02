@@ -1,3 +1,5 @@
+# schema_rag.py (enhanced with join-aware expansion)
+
 import json
 import pickle
 import requests
@@ -8,57 +10,34 @@ from typing import Dict, List, Tuple
 OLLAMA_URL = "http://localhost:11434/api/embeddings"
 MODEL_NAME = "nomic-embed-text"
 SCHEMA_PATH = "augur_schema.json"
-TABLE_EMBED_PATH = "augur_table_embeddings.pkl"
 COLUMN_EMBED_PATH = "augur_column_embeddings.pkl"
+
+# Known join paths for semantic expansion
+JOIN_PATHS = {
+    ("commits", "repo_id"): ["repo"],
+    ("commits", "cmt_ght_author_id"): ["contributors"],
+    ("pull_requests", "repo_id"): ["repo"],
+    ("pull_requests", "pr_cntrb_id"): ["contributors"],
+    ("pull_request_reviews", "pull_request_id"): ["pull_requests"],
+    ("contributor_affiliations", "cntrb_id"): ["contributors"],
+    ("repo", "repo_group_id"): ["repo_groups"]
+}
 
 def infer_column_meaning(column_name: str, table_name: str) -> str:
     col = column_name.lower()
 
     patterns = {
         r'.*_id$': 'unique identifier',
-        r'repo_id': 'repository identifier',
-        r'cntrb_id': 'contributor identifier',
-        r'pull_request_id': 'pull request identifier',
-        r'issue_id': 'issue identifier',
+        r'repo_id': 'repository identifier (join with repo)',
+        r'cntrb_id': 'contributor identifier (join with contributors)',
+        r'cmt_ght_author_id': 'commit author (join with contributors)',
+        r'pull_request_id': 'pull request identifier (join with pull_requests)',
+        r'pr_cntrb_id': 'pull request contributor (join with contributors)',
         r'.*_at$': 'timestamp when event occurred',
-        r'.*_date$': 'date when event occurred',
-        r'created_at': 'creation timestamp',
-        r'updated_at': 'last update timestamp',
-        r'closed_at': 'closure timestamp',
-        r'merged_at': 'merge timestamp',
-        r'cmt_.*hash': 'git commit hash identifier',
-        r'cmt_author.*': 'commit author information',
-        r'cmt_committer.*': 'commit committer information',
-        r'cmt_added': 'lines of code added in commit',
-        r'cmt_removed': 'lines of code removed in commit',
-        r'cmt_.*email': 'email address of commit author/committer',
-        r'cmt_.*name': 'name of commit author/committer',
-        r'pr_.*state': 'pull request status (open/closed/merged)',
-        r'pr_body': 'pull request description text',
-        r'pr_.*title': 'pull request title',
-        r'pr_src_number': 'pull request number on platform',
-        r'pr_merged_at': 'timestamp when pull request was merged',
-        r'issue_title': 'issue title text',
-        r'issue_body': 'issue description text',
-        r'issue_state': 'issue status (open/closed)',
-        r'gh_issue_number': 'GitHub issue number',
         r'repo_name': 'repository name',
-        r'fork_count': 'number of repository forks',
-        r'stars_count': 'number of repository stars',
-        r'watchers_count': 'number of repository watchers',
-        r'open_issues': 'count of currently open issues',
         r'cntrb_login': 'contributor username/login',
         r'cntrb_email': 'contributor email address',
-        r'cntrb_.*name': 'contributor name',
-        r'cntrb_company': 'contributor company affiliation',
-        r'.*_count$': 'count or number of items',
-        r'comment_count': 'number of comments',
-        r'total_lines': 'total lines of code',
-        r'code_lines': 'lines containing code',
-        r'tool_source': 'data collection tool identifier',
-        r'tool_version': 'version of data collection tool',
-        r'data_source': 'source of the data',
-        r'data_collection_date': 'when data was collected',
+        r'pr_src_state': 'pull request status (open/closed)',
     }
 
     for pattern, description in patterns.items():
@@ -66,21 +45,6 @@ def infer_column_meaning(column_name: str, table_name: str) -> str:
             return description
 
     return f"{table_name} {column_name.replace('_', ' ')}"
-
-def load_schema_for_tables():
-    with open(SCHEMA_PATH, "r") as f:
-        schema = json.load(f)
-
-    descriptions = []
-    table_keys = []
-
-    for table, metadata in schema.items():
-        desc = metadata.get("description", "")
-        full_text = f"Table augur_data.{table}: {desc}"
-        descriptions.append(full_text)
-        table_keys.append(table)
-
-    return table_keys, descriptions
 
 def load_schema_for_columns():
     with open(SCHEMA_PATH, "r") as f:
@@ -94,14 +58,17 @@ def load_schema_for_columns():
         columns = metadata.get("columns", [])
 
         for column_name in columns:
-            column_meaning = infer_column_meaning(column_name, f"augur_data.{table_name}")
-            full_desc = f"Column {column_name} in table augur_data.{table_name}: {column_meaning}. Table context: {table_desc}"
+            key = f"{table_name}.{column_name}"
+            meaning = infer_column_meaning(column_name, table_name)
+            joins = JOIN_PATHS.get((table_name, column_name), [])
+            join_str = f" Possible joins: {', '.join(joins)}" if joins else ""
+            full_desc = f"{key} — {meaning}. Table context: {table_desc}.{join_str}"
             column_descriptions.append(full_desc)
             column_keys.append((table_name, column_name))
 
     return column_keys, column_descriptions
 
-def get_embeddings(texts):
+def get_embeddings(texts: List[str]) -> List[List[float]]:
     embeddings = []
     for text in texts:
         response = requests.post(
@@ -113,16 +80,62 @@ def get_embeddings(texts):
         embeddings.append(response.json()["embedding"])
     return embeddings
 
-def embed_and_save():
-    print("Embedding tables...")
-    table_keys, table_descriptions = load_schema_for_tables()
+def get_schema_context(query: str) -> str:
+    with open(SCHEMA_PATH, "r") as f:
+        schema = json.load(f)
+
+    table_descriptions = [f"Table {t}: {meta.get('description', '')}" for t, meta in schema.items()]
+    table_keys = list(schema.keys())
     table_embeddings = get_embeddings(table_descriptions)
+    query_embedding = get_embeddings([query])[0]
 
-    with open(TABLE_EMBED_PATH, "wb") as f:
-        pickle.dump((table_embeddings, table_keys, table_descriptions), f)
-    print(f"Saved table embeddings to {TABLE_EMBED_PATH}")
+    table_knn = NearestNeighbors(n_neighbors=min(5, len(table_embeddings)), metric="cosine")
+    table_knn.fit(table_embeddings)
+    _, table_indices = table_knn.kneighbors([query_embedding])
+    selected_tables = set([table_keys[i] for i in table_indices[0]])
 
-    print("Embedding columns...")
+    with open(COLUMN_EMBED_PATH, "rb") as f:
+        column_embeddings, column_keys, column_descriptions = pickle.load(f)
+
+    filtered = [
+        (i, key, column_descriptions[i], column_embeddings[i])
+        for i, key in enumerate(column_keys)
+        if key[0] in selected_tables
+    ]
+
+    if not filtered:
+        return "No matching schema found."
+
+    table_column_map = {table: [] for table in selected_tables}
+    filtered_keys = [key for _, key, _, _ in filtered]
+    filtered_embs = [vec for _, _, _, vec in filtered]
+
+    col_knn = NearestNeighbors(n_neighbors=min(15, len(filtered_embs)), metric="cosine")
+    col_knn.fit(filtered_embs)
+    _, col_indices = col_knn.kneighbors([query_embedding])
+
+    additional_tables = set()
+    for idx in col_indices[0]:
+        t, c = filtered_keys[idx]
+        table_column_map[t].append(c)
+        join_paths = JOIN_PATHS.get((t, c), [])
+        additional_tables.update(join_paths)
+
+    for table in additional_tables:
+        if table not in table_column_map and table in schema:
+            columns = schema[table]["columns"]
+            table_column_map[table] = columns[:6]  # add a few default columns
+
+    schema_lines = []
+    for table, columns in table_column_map.items():
+        if columns:
+            column_list = ", ".join([f"{table}.{col}" for col in columns])
+            schema_lines.append(f"augur_data.{table}({column_list})")
+
+    return "\n".join(schema_lines)
+
+def embed_and_save():
+    print("Embedding columns with join-aware descriptions...")
     column_keys, column_descriptions = load_schema_for_columns()
     column_embeddings = get_embeddings(column_descriptions)
 
@@ -130,136 +143,15 @@ def embed_and_save():
         pickle.dump((column_embeddings, column_keys, column_descriptions), f)
     print(f"Saved column embeddings to {COLUMN_EMBED_PATH}")
 
-def get_relevant_tables(query: str, top_k: int = 5) -> List[str]:
-    with open(TABLE_EMBED_PATH, "rb") as f:
-        embeddings, table_keys, descriptions = pickle.load(f)
-
-    query_embedding = get_embeddings([query])[0]
-
-    knn = NearestNeighbors(n_neighbors=min(top_k, len(embeddings)), metric="cosine")
-    knn.fit(embeddings)
-
-    distances, indices = knn.kneighbors([query_embedding])
-    return [table_keys[i] for i in indices[0]]
-
-def get_relevant_columns_for_tables(query: str, selected_tables: List[str], max_cols_per_table: int = 10) -> Dict[str, List[str]]:
-    with open(COLUMN_EMBED_PATH, "rb") as f:
-        embeddings, column_keys, descriptions = pickle.load(f)
-
-    query_embedding = get_embeddings([query])[0]
-
-    relevant_indices = []
-    relevant_column_keys = []
-    relevant_embeddings = []
-
-    for i, (table_name, col_name) in enumerate(column_keys):
-        if table_name in selected_tables:
-            relevant_indices.append(i)
-            relevant_column_keys.append((table_name, col_name))
-            relevant_embeddings.append(embeddings[i])
-
-    if not relevant_embeddings:
-        return {}
-
-    knn = NearestNeighbors(n_neighbors=len(relevant_embeddings), metric="cosine")
-    knn.fit(relevant_embeddings)
-
-    distances, indices = knn.kneighbors([query_embedding])
-
-    result = {table: [] for table in selected_tables}
-    table_counts = {table: 0 for table in selected_tables}
-
-    for idx in indices[0]:
-        table_name, col_name = relevant_column_keys[idx]
-        if table_counts[table_name] < max_cols_per_table:
-            result[table_name].append(col_name)
-            table_counts[table_name] += 1
-
-    return result
-
-def get_essential_columns(table_name: str) -> List[str]:
-    with open(SCHEMA_PATH, "r") as f:
-        schema = json.load(f)
-
-    if table_name not in schema:
-        return []
-
-    columns = schema[table_name]['columns']
-    essential = []
-
-    for col in columns:
-        col_lower = col.lower()
-        if (col_lower.endswith('_id') or 
-            col_lower in ['created_at', 'updated_at', 'closed_at', 'merged_at'] or
-            'timestamp' in col_lower):
-            essential.append(col)
-
-    table_essentials = {
-        'commits': ['cmt_commit_hash', 'cmt_author_name', 'cmt_added', 'cmt_removed'],
-        'pull_requests': ['pr_src_number', 'pr_src_title', 'pr_src_state'],
-        'issues': ['issue_title', 'issue_state', 'gh_issue_number'],
-        'contributors': ['cntrb_login', 'cntrb_full_name'],
-        'repo': ['repo_name', 'repo_git'],
-        'repo_info': ['stars_count', 'fork_count', 'open_issues']
-    }
-
-    if table_name in table_essentials:
-        for essential_col in table_essentials[table_name]:
-            if essential_col in columns and essential_col not in essential:
-                essential.append(essential_col)
-
-    return essential
-
-def get_schema_context(query: str, top_tables: int = 5) -> str:
-    """Build complete schema context with smart column selection and schema-prefixed table names"""
-    relevant_tables = get_relevant_tables(query, top_tables)
-    relevant_columns = get_relevant_columns_for_tables(query, relevant_tables)
-    
-    # build context string
-    context = "Database Schema Context:\n\n"
-    
-    with open(SCHEMA_PATH, "r") as f:
-        schema = json.load(f)
-    
-    for table_name in relevant_tables:
-        if table_name not in schema:
-            continue
-
-        full_table_name = f"augur_data.{table_name}"  # prefix schema so we know where the table lives
-        table_desc = schema[table_name].get('description', '')
-        context += f"## Table: {full_table_name}\n"
-        if table_desc:
-            context += f"Purpose: {table_desc}\n"
-        
-        # Get essential columns
-        essential_cols = get_essential_columns(table_name)
-        relevant_cols = relevant_columns.get(table_name, [])
-        all_cols = list(dict.fromkeys(essential_cols + relevant_cols))
-        
-        context += "Columns:\n"
-        for col in all_cols:
-            col_meaning = infer_column_meaning(col, table_name)
-            is_essential = col in essential_cols
-            marker = " [ESSENTIAL]" if is_essential else ""
-            context += f"  - {col}: {col_meaning}{marker}\n"
-        
-        context += "\n"
-    
-    return context
-
-
 if __name__ == "__main__":
     import sys
-
     if len(sys.argv) == 2 and sys.argv[1] == "embed":
         embed_and_save()
-
     elif len(sys.argv) > 2 and sys.argv[1] == "ask":
-        question = " ".join(sys.argv[2:])
-        print("\nComplete Schema Context:")
-        print(get_schema_context(question))
-
+        query = " ".join(sys.argv[2:])
+        print("\n🔍 Simulating retrieval for:", query)
+        print("\n" + get_schema_context(query))
     else:
         print("Usage:")
-        print("  python schema_rag.py embed        # Build and save schema embeddings")
-        print("  python schema_rag.py ask <query>  # Get relevant schema for a question")
+        print("  python schema_rag.py embed        # Embed and save column schema")
+        print("  python schema_rag.py ask <query>  # Retrieve schema context")
