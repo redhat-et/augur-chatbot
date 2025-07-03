@@ -1,62 +1,48 @@
-# schema_rag.py (enhanced with join-aware expansion)
-
 import json
 import pickle
 import requests
 import re
 from sklearn.neighbors import NearestNeighbors
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 OLLAMA_URL = "http://localhost:11434/api/embeddings"
 MODEL_NAME = "nomic-embed-text"
 SCHEMA_PATH = "augur_schema.json"
 COLUMN_EMBED_PATH = "augur_column_embeddings.pkl"
 
-# Known join paths for semantic expansion
 JOIN_PATHS = {
     ("commits", "repo_id"): ["repo"],
     ("commits", "cmt_ght_author_id"): ["contributors"],
     ("pull_requests", "repo_id"): ["repo"],
-    ("pull_requests", "pr_cntrb_id"): ["contributors"],
-    ("pull_request_reviews", "pull_request_id"): ["pull_requests"],
-    ("contributor_affiliations", "cntrb_id"): ["contributors"],
-    ("repo", "repo_group_id"): ["repo_groups"]
+    ("issues", "repo_id"): ["repo"],
+    ("repo_info", "repo_id"): ["repo"]
 }
 
 def infer_column_meaning(column_name: str, table_name: str) -> str:
     col = column_name.lower()
-
     patterns = {
         r'.*_id$': 'unique identifier',
         r'repo_id': 'repository identifier (join with repo)',
         r'cntrb_id': 'contributor identifier (join with contributors)',
         r'cmt_ght_author_id': 'commit author (join with contributors)',
         r'pull_request_id': 'pull request identifier (join with pull_requests)',
-        r'pr_cntrb_id': 'pull request contributor (join with contributors)',
         r'.*_at$': 'timestamp when event occurred',
         r'repo_name': 'repository name',
-        r'cntrb_login': 'contributor username/login',
-        r'cntrb_email': 'contributor email address',
-        r'pr_src_state': 'pull request status (open/closed)',
+        r'cntrb_login': 'contributor username/login'
     }
-
     for pattern, description in patterns.items():
         if re.match(pattern, col):
             return description
-
     return f"{table_name} {column_name.replace('_', ' ')}"
 
 def load_schema_for_columns():
     with open(SCHEMA_PATH, "r") as f:
         schema = json.load(f)
-
     column_descriptions = []
     column_keys = []
-
     for table_name, metadata in schema.items():
         table_desc = metadata.get("description", "")
         columns = metadata.get("columns", [])
-
         for column_name in columns:
             key = f"{table_name}.{column_name}"
             meaning = infer_column_meaning(column_name, table_name)
@@ -65,7 +51,6 @@ def load_schema_for_columns():
             full_desc = f"{key} — {meaning}. Table context: {table_desc}.{join_str}"
             column_descriptions.append(full_desc)
             column_keys.append((table_name, column_name))
-
     return column_keys, column_descriptions
 
 def get_embeddings(texts: List[str]) -> List[List[float]]:
@@ -124,7 +109,7 @@ def get_schema_context(query: str) -> str:
     for table in additional_tables:
         if table not in table_column_map and table in schema:
             columns = schema[table]["columns"]
-            table_column_map[table] = columns[:6]  # add a few default columns
+            table_column_map[table] = columns[:6]
 
     schema_lines = []
     for table, columns in table_column_map.items():
@@ -138,7 +123,6 @@ def embed_and_save():
     print("Embedding columns with join-aware descriptions...")
     column_keys, column_descriptions = load_schema_for_columns()
     column_embeddings = get_embeddings(column_descriptions)
-
     with open(COLUMN_EMBED_PATH, "wb") as f:
         pickle.dump((column_embeddings, column_keys, column_descriptions), f)
     print(f"Saved column embeddings to {COLUMN_EMBED_PATH}")
@@ -149,7 +133,7 @@ if __name__ == "__main__":
         embed_and_save()
     elif len(sys.argv) > 2 and sys.argv[1] == "ask":
         query = " ".join(sys.argv[2:])
-        print("\n🔍 Simulating retrieval for:", query)
+        print("\n\ud83d\udd0d Simulating retrieval for:", query)
         print("\n" + get_schema_context(query))
     else:
         print("Usage:")

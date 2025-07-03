@@ -9,10 +9,10 @@ def execute_sql(sql: str) -> list[dict]:
     try:
         conn = psycopg2.connect(
             dbname=os.getenv("AUGUR_DB", "augur"),
-            user=os.getenv("AUGUR_USER", "ssreeram"),
-            password=os.getenv("AUGUR_PASSWORD", "OMi0uuch0Ibo"),
+            user=os.getenv("AUGUR_USER", "username"),
+            password=os.getenv("AUGUR_PASSWORD", "password"),
             host=os.getenv("AUGUR_HOST", "localhost"),
-            port=os.getenv("AUGUR_PORT", "5411"),
+            port=os.getenv("AUGUR_PORT", "port"),
         )
         cursor = conn.cursor()
         cursor.execute("SET search_path TO augur_data;")
