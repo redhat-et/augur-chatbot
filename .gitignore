@@ -13,3 +13,11 @@ register_augur_tools.py
 mcp_server.py
 chinook_ex.py
 Chinook_PostgreSql.sql
+augur_schema_embeddings.pkl
+augur_table_embeddings.pkl
+augur_test.py
+get-pip.py
+local_setup_guide.md
+prompt_template.py
+start_mcp.py
+uv.lock
