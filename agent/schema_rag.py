@@ -23,12 +23,10 @@ def infer_column_meaning(column_name: str, table_name: str) -> str:
     patterns = {
         r'.*_id$': 'unique identifier',
         r'repo_id': 'repository identifier (join with repo)',
-        r'cntrb_id': 'contributor identifier (join with contributors)',
         r'cmt_ght_author_id': 'commit author (join with contributors)',
         r'pull_request_id': 'pull request identifier (join with pull_requests)',
         r'.*_at$': 'timestamp when event occurred',
-        r'repo_name': 'repository name',
-        r'cntrb_login': 'contributor username/login'
+        r'repo_name': 'repository name'
     }
     for pattern, description in patterns.items():
         if re.match(pattern, col):
@@ -40,12 +38,12 @@ def load_schema_for_columns():
         schema = json.load(f)
     column_descriptions = []
     column_keys = []
-    for table_name, metadata in schema.items():
+    for table_name, metadata in schema["tables"].items():
         table_desc = metadata.get("description", "")
-        columns = metadata.get("columns", [])
-        for column_name in columns:
+        columns = metadata.get("columns", {})
+        for column_name, col_meta in columns.items():
             key = f"{table_name}.{column_name}"
-            meaning = infer_column_meaning(column_name, table_name)
+            meaning = col_meta.get("description", infer_column_meaning(column_name, table_name))
             joins = JOIN_PATHS.get((table_name, column_name), [])
             join_str = f" Possible joins: {', '.join(joins)}" if joins else ""
             full_desc = f"{key} — {meaning}. Table context: {table_desc}.{join_str}"
@@ -69,8 +67,8 @@ def get_schema_context(query: str) -> str:
     with open(SCHEMA_PATH, "r") as f:
         schema = json.load(f)
 
-    table_descriptions = [f"Table {t}: {meta.get('description', '')}" for t, meta in schema.items()]
-    table_keys = list(schema.keys())
+    table_descriptions = [f"Table {t}: {meta.get('description', '')}" for t, meta in schema["tables"].items()]
+    table_keys = list(schema["tables"].keys())
     table_embeddings = get_embeddings(table_descriptions)
     query_embedding = get_embeddings([query])[0]
 
@@ -107,8 +105,8 @@ def get_schema_context(query: str) -> str:
         additional_tables.update(join_paths)
 
     for table in additional_tables:
-        if table not in table_column_map and table in schema:
-            columns = schema[table]["columns"]
+        if table not in table_column_map and table in schema["tables"]:
+            columns = list(schema["tables"][table]["columns"].keys())
             table_column_map[table] = columns[:6]
 
     schema_lines = []
@@ -133,7 +131,7 @@ if __name__ == "__main__":
         embed_and_save()
     elif len(sys.argv) > 2 and sys.argv[1] == "ask":
         query = " ".join(sys.argv[2:])
-        print("\n\ud83d\udd0d Simulating retrieval for:", query)
+        print("\n🔍 Simulating retrieval for:", query)
         print("\n" + get_schema_context(query))
     else:
         print("Usage:")

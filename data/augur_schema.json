@@ -1,0 +1,370 @@
+{
+  "tables": {
+    "repo": {
+      "columns": {
+        "repo_id": {
+          "type": "identifier",
+          "description": "unique repository identifier",
+          "aliases": ["repository id", "repo identifier", "project id"]
+        },
+        "repo_name": {
+          "type": "string",
+          "description": "name of the repository",
+          "aliases": ["repository name", "project name", "repo title"],
+          "patterns": ["find repo by name", "search repositories", "project lookup"]
+        },
+        "url": {
+          "type": "string",
+          "description": "GitHub URL of the repository",
+          "aliases": ["repository url", "github link", "project url"],
+          "patterns": ["repository links", "github urls"]
+        }
+      },
+      "description": "Primary table containing metadata for each repository, including its name and URL. Use repo_id to join with related tables like commits, issues, and pull_requests.",
+      "aliases": ["repository", "repositories", "project", "projects", "codebase", "git repo", "github repo"],
+      "common_questions": [
+        "repositories with most stars",
+        "popular projects",
+        "find repo by name",
+        "list all repositories",
+        "which repositories",
+        "show me projects"
+      ],
+      "query_patterns": {
+        "lookup": ["find specific repository", "search by name", "get repository details"],
+        "listing": ["all repositories", "list projects", "show repos"],
+        "filtering": ["repositories matching criteria", "projects with specific attributes"]
+      }
+    },
+    "commits": {
+      "columns": {
+        "cmt_id": {
+          "type": "identifier",
+          "description": "unique commit identifier",
+          "aliases": ["commit id", "commit hash", "commit identifier"]
+        },
+        "repo_id": {
+          "type": "foreign_key",
+          "references": "repo.repo_id",
+          "description": "links commit to repository",
+          "aliases": ["repository id", "repo identifier"]
+        },
+        "cmt_author_timestamp": {
+          "type": "datetime",
+          "description": "when the commit was authored",
+          "aliases": ["commit date", "commit time", "when committed", "commit timestamp", "authored date"],
+          "patterns": ["commits over time", "commit activity", "development timeline", "recent commits", "commit history"]
+        },
+        "cmt_ght_author_id": {
+          "type": "identifier",
+          "description": "GitHub user ID of the commit author",
+          "aliases": ["author id", "github author", "committer id", "contributor id"]
+        },
+        "cmt_author_email": {
+          "type": "string",
+          "description": "email of commit author, useful for identifying contributor organizations by domain",
+          "aliases": ["author email", "committer email", "contributor email", "developer email"],
+          "patterns": ["company contributions", "organizational activity", "corporate involvement", "contributor analysis"]
+        }
+      },
+      "description": "Each row represents a commit to a repository. Use cmt_author_email to infer contributor affiliation by domain (e.g., redhat.com). Join with repo on repo_id to filter by repository.",
+      "aliases": ["commits", "code changes", "contributions", "development activity", "commit history", "code commits"],
+      "common_questions": [
+        "commits per repository",
+        "most active contributors",
+        "commit activity over time",
+        "recent commits",
+        "who contributed to project",
+        "company contributions",
+        "development timeline"
+      ],
+      "query_patterns": {
+        "temporal": ["commits over time", "recent activity", "development timeline", "commit frequency"],
+        "contributor": ["author analysis", "contributor activity", "organizational contributions"],
+        "activity": ["most active repos", "commit volume", "development intensity"]
+      }
+    },
+    "pull_requests": {
+      "columns": {
+        "pull_request_id": {
+          "type": "identifier",
+          "description": "unique pull request identifier",
+          "aliases": ["pr id", "pull request id", "pr identifier"]
+        },
+        "repo_id": {
+          "type": "foreign_key",
+          "references": "repo.repo_id",
+          "description": "links pull request to repository",
+          "aliases": ["repository id", "repo identifier"]
+        },
+        "pr_created_at": {
+          "type": "datetime",
+          "description": "when the pull request was created",
+          "aliases": ["pr created", "pull request created", "pr open date", "created date"],
+          "patterns": ["pr creation over time", "pull request activity", "when prs opened"]
+        },
+        "pr_closed_at": {
+          "type": "datetime",
+          "description": "when the pull request was closed (merged or rejected)",
+          "aliases": ["pr closed", "pull request closed", "pr close date", "closed date"],
+          "patterns": ["pr resolution time", "pull request lifecycle", "merge activity"]
+        }
+      },
+      "description": "Contains pull request lifecycle information including open and close timestamps. Use repo_id to link each PR to a specific repository.",
+      "aliases": ["pull requests", "PRs", "pull request", "merge requests", "code reviews"],
+      "common_questions": [
+        "pull requests per repository",
+        "open pull requests",
+        "pr merge time",
+        "pull request activity",
+        "repositories with most prs",
+        "recent pull requests"
+      ],
+      "query_patterns": {
+        "lifecycle": ["pr resolution time", "open vs closed prs", "merge timeline"],
+        "activity": ["pr volume", "pull request frequency", "active repositories"],
+        "temporal": ["pr trends", "pull request activity over time", "recent prs"]
+      }
+    },
+    "issues": {
+      "columns": {
+        "issue_id": {
+          "type": "identifier",
+          "description": "unique issue identifier",
+          "aliases": ["issue id", "issue identifier", "ticket id"]
+        },
+        "repo_id": {
+          "type": "foreign_key",
+          "references": "repo.repo_id",
+          "description": "links issue to repository",
+          "aliases": ["repository id", "repo identifier"]
+        },
+        "created_at": {
+          "type": "datetime",
+          "description": "when the issue was created",
+          "aliases": ["issue created", "created date", "issue open date", "reported date"],
+          "patterns": ["issue creation over time", "when issues opened", "issue reporting"]
+        },
+        "closed_at": {
+          "type": "datetime",
+          "description": "when the issue was closed (null if still open)",
+          "aliases": ["issue closed", "closed date", "resolved date", "issue close date"],
+          "patterns": ["issue resolution time", "when issues closed", "issue lifecycle"]
+        },
+        "comment_count": {
+          "type": "integer",
+          "description": "total number of comments on the issue",
+          "aliases": ["comments", "comment count", "number of comments", "discussion volume"],
+          "patterns": ["most discussed issues", "issue engagement", "active discussions"]
+        }
+      },
+      "description": "Tracks GitHub issues per repository. Includes open/close times and total comment count. Join with repo using repo_id.",
+      "aliases": ["issues", "bugs", "tickets", "issue tracker", "github issues", "bug reports"],
+      "common_questions": [
+        "open issues per repository",
+        "most discussed issues",
+        "issue resolution time",
+        "repositories with most issues",
+        "recent issues",
+        "bug reports"
+      ],
+      "query_patterns": {
+        "status": ["open issues", "closed issues", "resolved vs unresolved"],
+        "engagement": ["most commented issues", "discussion volume", "issue activity"],
+        "temporal": ["issue trends", "resolution time", "issue lifecycle"]
+      }
+    },
+    "repo_info": {
+      "columns": {
+        "repo_id": {
+          "type": "foreign_key",
+          "references": "repo.repo_id",
+          "description": "links to repository",
+          "aliases": ["repository id", "repo identifier"]
+        },
+        "stars_count": {
+          "type": "integer",
+          "description": "number of GitHub stars for the repository",
+          "aliases": ["stars", "star count", "github stars", "stargazers"],
+          "patterns": ["most starred repos", "popular projects", "repository popularity"]
+        },
+        "issues_count": {
+          "type": "integer",
+          "description": "total number of issues in the repository",
+          "aliases": ["total issues", "issue count", "number of issues"],
+          "patterns": ["repositories with most issues", "issue volume", "project activity"]
+        },
+        "pull_request_count": {
+          "type": "integer",
+          "description": "total number of pull requests in the repository",
+          "aliases": ["pr count", "pull request count", "total prs", "number of pull requests"],
+          "patterns": ["repositories with most prs", "pr volume", "development activity"]
+        }
+      },
+      "description": "Repository metrics including stars, total issues, and pull requests. Join with repo on repo_id for a quick summary view.",
+      "aliases": ["repository info", "repo metrics", "repository statistics", "project stats"],
+      "common_questions": [
+        "most popular repositories",
+        "repositories with most stars",
+        "active repositories",
+        "project statistics",
+        "repository rankings",
+        "busiest projects"
+      ],
+      "query_patterns": {
+        "popularity": ["most starred repos", "popular projects", "trending repositories", "top repositories"],
+        "activity": ["active repositories", "repos with most issues", "busy projects", "high activity"],
+        "health": ["well-maintained repos", "project health metrics", "repository vitality"],
+        "ranking": ["top repositories", "repository rankings", "best projects"]
+      }
+    },
+    "explorer_entry_list": {
+      "columns": {
+        "repo_id": {
+          "type": "foreign_key",
+          "references": "repo.repo_id",
+          "description": "links to repository",
+          "aliases": ["repository id", "repo identifier"]
+        },
+        "repo_name": {
+          "type": "string",
+          "description": "name of the repository",
+          "aliases": ["repository name", "project name"]
+        },
+        "rg_name": {
+          "type": "string",
+          "description": "repository group name (organization/foundation)",
+          "aliases": ["repo group", "organization", "foundation", "group name", "org name"],
+          "patterns": ["repositories by organization", "foundation projects", "corporate repos"]
+        }
+      },
+      "description": "Materialized view linking each repository to its corresponding repo group (rg_name), such as 'adobe', 'cncf', etc. Useful for grouping repositories by organization or topic.",
+      "aliases": ["repo groups", "repository groups", "organization mapping", "foundation projects"],
+      "common_questions": [
+        "repositories by organization",
+        "projects from specific foundation",
+        "corporate open source projects",
+        "repos from adobe",
+        "cncf projects"
+      ],
+      "query_patterns": {
+        "organizational": ["repos by organization", "corporate projects", "foundation repositories"],
+        "grouping": ["group repositories", "organize by foundation", "categorize projects"]
+      },
+      "business_context": {
+        "rg_name_examples": ["adobe", "cncf", "apache", "kubernetes", "linux foundation", "google", "microsoft"],
+        "use_cases": ["organizational analysis", "foundation projects", "corporate OSS", "ecosystem analysis"]
+      }
+    },
+    "explorer_repo_languages": {
+      "columns": {
+        "repo_id": {
+          "type": "foreign_key",
+          "references": "repo.repo_id",
+          "description": "links to repository",
+          "aliases": ["repository id", "repo identifier"]
+        },
+        "repo_name": {
+          "type": "string",
+          "description": "name of the repository",
+          "aliases": ["repository name", "project name"]
+        },
+        "programming_language": {
+          "type": "string",
+          "description": "programming language used in the repository",
+          "aliases": ["language", "programming language", "coding language", "tech stack"],
+          "patterns": ["repositories by language", "most popular languages", "language usage"]
+        },
+        "url": {
+          "type": "string",
+          "description": "GitHub URL of the repository",
+          "aliases": ["repository url", "github link"]
+        }
+      },
+      "description": "Materialized view listing programming languages used in each repository. Use to analyze tech stacks or language popularity across repos.",
+      "aliases": ["repository languages", "programming languages", "tech stack", "language usage"],
+      "common_questions": [
+        "repositories using python",
+        "most popular programming languages",
+        "javascript projects",
+        "repos by language",
+        "language distribution"
+      ],
+      "query_patterns": {
+        "language_analysis": ["repos by language", "language popularity", "tech stack analysis"],
+        "filtering": ["projects using specific language", "language-specific repositories"],
+        "trends": ["language adoption", "popular languages", "language distribution"]
+      }
+    }
+  },
+  "relationships": {
+    "repo_commits": {
+      "join": "repo.repo_id = commits.repo_id",
+      "description": "Link repositories to their commit history",
+      "common_queries": ["commits per repo", "repository activity", "development timeline", "contributor analysis"]
+    },
+    "repo_popularity": {
+      "join": "repo.repo_id = repo_info.repo_id",
+      "description": "Connect repositories to their metrics",
+      "common_queries": ["most popular repos", "repository rankings", "project statistics"]
+    },
+    "repo_issues": {
+      "join": "repo.repo_id = issues.repo_id",
+      "description": "Link repositories to their issues",
+      "common_queries": ["issues per repo", "repository health", "bug tracking"]
+    },
+    "repo_pulls": {
+      "join": "repo.repo_id = pull_requests.repo_id",
+      "description": "Link repositories to their pull requests",
+      "common_queries": ["prs per repo", "development activity", "code review activity"]
+    },
+    "repo_organizations": {
+      "join": "repo.repo_id = explorer_entry_list.repo_id",
+      "description": "Link repositories to their organization/foundation",
+      "common_queries": ["repos by organization", "foundation projects", "corporate analysis"]
+    },
+    "repo_languages": {
+      "join": "repo.repo_id = explorer_repo_languages.repo_id",
+      "description": "Link repositories to their programming languages",
+      "common_queries": ["repos by language", "language analysis", "tech stack"]
+    }
+  },
+  "temporal_patterns": {
+    "recent_activity": {
+      "columns": ["commits.cmt_author_timestamp", "pull_requests.pr_created_at", "issues.created_at"],
+      "description": "Time-based columns for analyzing recent activity",
+      "patterns": ["recent commits", "latest pull requests", "new issues", "current activity"]
+    },
+    "lifecycle_analysis": {
+      "columns": ["pull_requests.pr_created_at to pr_closed_at", "issues.created_at to closed_at"],
+      "description": "Date ranges for lifecycle analysis",
+      "patterns": ["pr resolution time", "issue lifecycle", "time to close"]
+    },
+    "trend_analysis": {
+      "description": "Temporal patterns for trend analysis",
+      "patterns": ["activity over time", "growth patterns", "seasonal development", "historical trends"]
+    }
+  },
+  "common_analytical_patterns": {
+    "popularity_analysis": {
+      "tables": ["repo", "repo_info"],
+      "description": "Analyzing repository popularity and engagement",
+      "questions": ["most popular repos", "trending projects", "star rankings"]
+    },
+    "activity_analysis": {
+      "tables": ["repo", "commits", "pull_requests", "issues"],
+      "description": "Analyzing development activity and engagement",
+      "questions": ["most active repos", "development velocity", "contributor activity"]
+    },
+    "organizational_analysis": {
+      "tables": ["repo", "explorer_entry_list", "commits"],
+      "description": "Analyzing activity by organization or foundation",
+      "questions": ["corporate contributions", "foundation projects", "organizational activity"]
+    },
+    "technology_analysis": {
+      "tables": ["repo", "explorer_repo_languages", "repo_info"],
+      "description": "Analyzing technology usage and language popularity",
+      "questions": ["language popularity", "tech stack analysis", "language trends"]
+    }
+  }
+}
