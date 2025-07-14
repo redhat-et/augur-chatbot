@@ -5,7 +5,7 @@
         "repo_id": {
           "type": "identifier",
           "description": "unique repository identifier",
-          "aliases": ["repository id", "repo identifier", "project id"]
+          "aliases": ["repo id", "project id"]
         },
         "repo_name": {
           "type": "string",
@@ -13,7 +13,7 @@
           "aliases": ["repository name", "project name", "repo title"],
           "patterns": ["find repo by name", "search repositories", "project lookup"]
         },
-        "url": {
+        "repo_git": {
           "type": "string",
           "description": "GitHub URL of the repository",
           "aliases": ["repository url", "github link", "project url"],
@@ -31,7 +31,7 @@
         "show me projects"
       ],
       "query_patterns": {
-        "lookup": ["find specific repository", "search by name", "get repository details"],
+        "lookup": ["find repository", "search by name", "get repository details"],
         "listing": ["all repositories", "list projects", "show repos"],
         "filtering": ["repositories matching criteria", "projects with specific attributes"]
       }
@@ -54,11 +54,6 @@
           "description": "when the commit was authored",
           "aliases": ["commit date", "commit time", "when committed", "commit timestamp", "authored date"],
           "patterns": ["commits over time", "commit activity", "development timeline", "recent commits", "commit history"]
-        },
-        "cmt_ght_author_id": {
-          "type": "identifier",
-          "description": "GitHub user ID of the commit author",
-          "aliases": ["author id", "github author", "committer id", "contributor id"]
         },
         "cmt_author_email": {
           "type": "string",
@@ -159,7 +154,7 @@
         }
       },
       "description": "Tracks GitHub issues per repository. Includes open/close times and total comment count. Join with repo using repo_id.",
-      "aliases": ["issues", "bugs", "tickets", "issue tracker", "github issues", "bug reports"],
+      "aliases": ["issues", "tickets", "issue tracker", "github issues"],
       "common_questions": [
         "open issues per repository",
         "most discussed issues",

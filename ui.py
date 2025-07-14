@@ -73,7 +73,7 @@ agent = Agent(
 )
 session_id = agent.create_session("StreamlitSession")
 
-# --- Main App Logic ---
+# main.py logic, reformatted with streamlit
 user_input = st.text_input(" Ask a question:", placeholder="e.g., Count contributors per repo with over 1000 contributors")
 show_sql = st.checkbox("🔍 Show SQL Query")
 

@@ -1,3 +1,5 @@
+## Code to embed database schema and store in a pkl
+
 import json
 import pickle
 import requests
@@ -18,6 +20,7 @@ JOIN_PATHS = {
     ("repo_info", "repo_id"): ["repo"]
 }
 
+# Get column meaning based on suffix
 def infer_column_meaning(column_name: str, table_name: str) -> str:
     col = column_name.lower()
     patterns = {
@@ -33,6 +36,7 @@ def infer_column_meaning(column_name: str, table_name: str) -> str:
             return description
     return f"{table_name} {column_name.replace('_', ' ')}"
 
+# Loading from augur_schema.json
 def load_schema_for_columns():
     with open(SCHEMA_PATH, "r") as f:
         schema = json.load(f)
@@ -51,6 +55,7 @@ def load_schema_for_columns():
             column_keys.append((table_name, column_name))
     return column_keys, column_descriptions
 
+# Store embeddings in a list
 def get_embeddings(texts: List[str]) -> List[List[float]]:
     embeddings = []
     for text in texts:
@@ -63,6 +68,7 @@ def get_embeddings(texts: List[str]) -> List[List[float]]:
         embeddings.append(response.json()["embedding"])
     return embeddings
 
+# Filtering and "choosing tables and columns" logic using KNN and cosine similarity
 def get_schema_context(query: str) -> str:
     with open(SCHEMA_PATH, "r") as f:
         schema = json.load(f)
@@ -80,6 +86,7 @@ def get_schema_context(query: str) -> str:
     with open(COLUMN_EMBED_PATH, "rb") as f:
         column_embeddings, column_keys, column_descriptions = pickle.load(f)
 
+## Use column descriptions and embeddings to match schema to query
     filtered = [
         (i, key, column_descriptions[i], column_embeddings[i])
         for i, key in enumerate(column_keys)
@@ -89,14 +96,17 @@ def get_schema_context(query: str) -> str:
     if not filtered:
         return "No matching schema found."
 
+## identifies relevant list of columns for selected tables
+
     table_column_map = {table: [] for table in selected_tables}
     filtered_keys = [key for _, key, _, _ in filtered]
     filtered_embs = [vec for _, _, _, vec in filtered]
-
+# Using cosine similarity, find the top 15 relevant cols to user query
     col_knn = NearestNeighbors(n_neighbors=min(15, len(filtered_embs)), metric="cosine")
     col_knn.fit(filtered_embs)
     _, col_indices = col_knn.kneighbors([query_embedding])
 
+    # add context to map
     additional_tables = set()
     for idx in col_indices[0]:
         t, c = filtered_keys[idx]
@@ -110,6 +120,7 @@ def get_schema_context(query: str) -> str:
             table_column_map[table] = columns[:6]
 
     schema_lines = []
+    ## adding augur_data prefix so sql will execute
     for table, columns in table_column_map.items():
         if columns:
             column_list = ", ".join([f"{table}.{col}" for col in columns])
@@ -117,6 +128,7 @@ def get_schema_context(query: str) -> str:
 
     return "\n".join(schema_lines)
 
+# Embed and save to .pkl
 def embed_and_save():
     print("Embedding columns with join-aware descriptions...")
     column_keys, column_descriptions = load_schema_for_columns()

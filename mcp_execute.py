@@ -1,3 +1,5 @@
+## Custom MCP server - connects to a postgres database and executes SQL
+
 from mcp.server.fastmcp import FastMCP
 import psycopg2
 import os
@@ -26,29 +28,7 @@ def execute_sql(sql: str) -> list[dict]:
         if 'cursor' in locals(): cursor.close()
         if 'conn' in locals(): conn.close()
 
-# Tool 1: Get project-level info
-'''
-@mcp.tool()
-def get_project_info(repo_name: str) -> dict:
-    """
-    Returns the repo_id, GitHub URL, and associated repo group for a given project name.
-    Use this when you need metadata about a specific project.
-    """
-    sql = f"""
-        SELECT 
-            r.repo_id, 
-            r.url AS github_url, 
-            rg.rg_name AS repo_group
-        FROM augur_data.repo r
-        JOIN augur_data.repo_groups rg ON r.repo_group_id = rg.repo_group_id
-        WHERE r.repo_name = '{repo_name}'
-        LIMIT 1;
-    """
-    results = execute_sql(sql)
-    return results[0] if results else {"error": "Project not found."}
-    '''
-
-# Tool 4: Generic SQL query execution
+## MCP tool - works with core SQL executor
 @mcp.tool()
 def execute_query(sql: str) -> list[dict]:
     """

@@ -1,3 +1,5 @@
+## Code to register various MCP toolkits, depending on tool use
+
 from llama_stack_client import LlamaStackClient
 
 client = LlamaStackClient(base_url="http://localhost:8321")
