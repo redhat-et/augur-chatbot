@@ -28,7 +28,7 @@ Set your PostgreSQL credentials in ui.py and the mcp_execute.py
 ```
 5. **Run the Streamlit UI**
 ```bash
-   streamlit ui.py run
+   streamlit run ui.py
 ```
 Once running, the chatbot can answer a wide range of schema-aware questions about the Augur database. [ADD SAMPLE QUERIES]
 
