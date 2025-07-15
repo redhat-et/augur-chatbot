@@ -9,8 +9,8 @@ from typing import List, Tuple
 
 OLLAMA_URL = "http://localhost:11434/api/embeddings"
 MODEL_NAME = "nomic-embed-text"
-SCHEMA_PATH = "augur_schema.json"
-COLUMN_EMBED_PATH = "augur_column_embeddings.pkl"
+SCHEMA_PATH = "data/augur_schema.json"
+COLUMN_EMBED_PATH = "data/augur_column_embeddings.pkl"
 
 JOIN_PATHS = {
     ("commits", "repo_id"): ["repo"],

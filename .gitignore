@@ -24,3 +24,4 @@ uv.lock
 extract_augur_schema.py
 main.py
 mcp_tools_augur.py
+.env

@@ -12,21 +12,44 @@ To get started:
    git clone https://github.com/redhat-et/augur-chatbot.git
    cd augur-chatbot
 ```
-2. **Setup the environment**
+2. **Create a virtual environment (recommended)**
 ```bash
-  make setup_local
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
 ```
-3. **Ensure your Augur database is running**
+3. **Install Dependencies**
+Install dependencies from pyproject.toml:
+```bash
+  pip install -e .
+```
+4. **Create a .env file with your Augur Database credentials**
 You can either:
 Connect to an existing Augur instance (e.g., with replica data), or
 Spin up a local instance and populate it with repository data of your choosing.
-Set your PostgreSQL credentials in ui.py and the mcp_execute.py
 
-4. **Register the MCP tool server**
+Create a .env file in the root directory by copying the example file. Then fill in your database credentials:
+```bash
+  cp .env.example .env
+```
+
+5. **Run LlamaStack and Ollama locally**
+```bash
+  make setup_local
+```
+Or, optionally plug in your own model url into the Makefile
+
+6. **Register the MCP tool server**
 ```bash
   python register_mcp.py
 ```
-5. **Run the Streamlit UI**
+
+7. **Start the MCP SQL Server**
+```bash
+  make run_ui
+```
+
+8. **Run the Streamlit UI**
 ```bash
    streamlit ui.py run
 ```

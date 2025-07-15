@@ -3,6 +3,8 @@
 from mcp.server.fastmcp import FastMCP
 import psycopg2
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 mcp = FastMCP("execute")
 
@@ -11,11 +13,11 @@ def execute_sql(sql: str) -> list[dict]:
     try:
         conn = psycopg2.connect(
             dbname=os.getenv("AUGUR_DB", "augur"),
-            user=os.getenv("AUGUR_USER", "ssreeram"),
-            password=os.getenv("AUGUR_PASSWORD", "OMi0uuch0Ibo"),
+            user=os.getenv("AUGUR_USER", "your_db_user"),
+            password=os.getenv("AUGUR_PASSWORD", "your_db_password"),
             host=os.getenv("AUGUR_HOST", "localhost"),
-            port=os.getenv("AUGUR_PORT", "5411"),
-        )
+            port=os.getenv("AUGUR_PORT", "5432"),
+)
         cursor = conn.cursor()
         cursor.execute("SET search_path TO augur_data;")
         cursor.execute(sql)
