@@ -143,7 +143,7 @@ if __name__ == "__main__":
         embed_and_save()
     elif len(sys.argv) > 2 and sys.argv[1] == "ask":
         query = " ".join(sys.argv[2:])
-        print("\n🔍 Simulating retrieval for:", query)
+        print("\n Simulating retrieval for:", query)
         print("\n" + get_schema_context(query))
     else:
         print("Usage:")
