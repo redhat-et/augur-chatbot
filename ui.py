@@ -29,13 +29,6 @@ formatter = logging.Formatter('%(message)s')
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
-# Args
-parser = argparse.ArgumentParser()
-parser.add_argument("-r", "--remote", help="Use remote LlamaStack server", action="store_true")
-parser.add_argument("-s", "--session-info-on-exit", help="Print agent session info on exit", action="store_true")
-parser.add_argument("-a", "--auto", help="Run preset examples automatically", action="store_true")
-args = parser.parse_args()
-
 # Load .env and Connect
 load_dotenv()
 base_url = os.getenv("REMOTE_BASE_URL") if args.remote else "http://localhost:8321"
