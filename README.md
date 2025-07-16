@@ -14,9 +14,9 @@ To get started:
 ```
 2. **Create a virtual environment (recommended)**
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install --upgrade pip
 ```
 3. **Install Dependencies**
 Install dependencies from pyproject.toml:
