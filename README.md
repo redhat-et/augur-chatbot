@@ -4,6 +4,11 @@ This project is a database chat assistant for querying the [CHAOSS Augur](https:
 This chatbot enhances connects with Augur by enabling users to ask questions in natural language and receive accurate, SQL-grounded answers powered by an LLM. It's designed for people who want quick insights into open source projects or company-level impact without needing to write SQL.
 
 ---
+## Requirements
+- Python 3.10+
+- [Ollama](https://ollama.com/) (for running LLaMA models locally)
+- [Podman](https://podman.io/) (or Docker)
+- A running Augur PostgreSQL database and credentials
 
 ## Setup
 To get started:
