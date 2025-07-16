@@ -31,9 +31,8 @@ logger.addHandler(stream_handler)
 
 # Load .env and Connect
 load_dotenv()
-base_url = os.getenv("REMOTE_BASE_URL") if args.remote else "http://localhost:8321"
+base_url = os.getenv("BASE_URL")
 client = LlamaStackClient(base_url=base_url)
-logger.info(f" Connected to Llama Stack server @ {base_url}")
 
 # LLM Instructions
 instructions = """
