@@ -51,7 +51,7 @@ Or, optionally plug in your own model url into the Makefile
 
 7. **Start the MCP SQL Server**
 ```bash
-  make run_ui
+  make run_mcp
 ```
 
 8. **Run the Streamlit UI**
