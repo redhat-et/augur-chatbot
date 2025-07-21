@@ -1,5 +1,6 @@
 # Augur Chatbot
 
+
 This project is a database chat assistant for querying the [CHAOSS Augur](https://chaoss.github.io/augur/) open source software community metrics platform. Augur can collect and organizes GitHub data for thousands of repositories to help stakeholders understand contributor behavior, project health, and community trends.
 This chatbot enhances connects with Augur by enabling users to ask questions in natural language and receive accurate, SQL-grounded answers powered by an LLM. It's designed for people who want quick insights into open source projects or company-level impact without needing to write SQL. Under the hood, the tool uses a hybrid tool-calling approach with a customized schema retriever and Model Context Protocol (MCP) execution layer, ensuring SQL queries are grounded in the actual structure of your Augur instance.
 
@@ -56,7 +57,7 @@ make run_mcp
 
 8. **Run the Streamlit UI**
 ```bash
-streamlit ui.py run
+streamlit run ui.py
 ```
 
 Once running, the chatbot can answer a wide range of schema-aware questions about the Augur database.
