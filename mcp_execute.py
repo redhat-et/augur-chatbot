@@ -40,6 +40,23 @@ def execute_query(sql: str) -> list[dict]:
     return execute_sql(sql)
 
 
+@mcp.tool()
+def get_contributor_affiliations(repo_name: str, affiliation_keyword: str) -> list[dict]:
+    """
+    Retrieve affiliation details for contributors on a given repository, optionally filtered by company name or email domain.
+    """
+    sql = f"""
+        SELECT DISTINCT c.cntrb_full_name, ca.ca_affiliation
+        FROM augur_data.commits cm
+        JOIN augur_data.repo r ON cm.repo_id = r.repo_id
+        JOIN augur_data.contributors c ON cm.cmt_ght_author_id = c.cntrb_id
+        JOIN augur_data.contributor_affiliations ca ON c.cntrb_company = ca.ca_affiliation
+        WHERE r.repo_name = '{repo_name}' AND ca.ca_affiliation ILIKE '%{affiliation_keyword}%'
+        LIMIT 50
+    """
+    return execute_sql(sql)
+
+
 # Start the MCP server
 if __name__ == "__main__":
     mcp.run(transport="sse")

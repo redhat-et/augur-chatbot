@@ -4,14 +4,11 @@ import numpy as np
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client import LlamaStackClient
-import argparse
 import logging
 import os
 from dotenv import load_dotenv
-import psycopg2
 import json
 from schema_rag import get_schema_context
-import time
 import re
 
 # Streamlit Page Config
@@ -38,11 +35,13 @@ client = LlamaStackClient(base_url=base_url)
 instructions = """
 You are a SQL query expert for the CHAOSS Augur PostgreSQL database.
 You must always call the `execute_query()` tool
+Whenever the user asks about contributor affiliations—keywords like “company,” “affiliation,” “Red Hat,” “domain,” etc.—you must call the get_contributor_affiliations function instead of generating SQL yourself.
 TASK:
 - Convert the user's natural language input into a valid SQL query using only the provided schema context.
 - Use only the `execute_query(sql="...")` tool to run the query.
 - If a project is mentioned by name (e.g. "augur"), first retrieve its `repo_id` using:
    SELECT repo_id FROM augur_data.repo WHERE repo_name = 'repo_name'
+- Join tables on `repo_id`
 
 CONTEXT:
 - For each user input, you will receive a relevant subset of the database (tables + columns)
