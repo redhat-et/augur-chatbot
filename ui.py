@@ -30,6 +30,7 @@ logger.addHandler(stream_handler)
 load_dotenv()
 base_url = os.getenv("BASE_URL")
 client = LlamaStackClient(base_url=base_url)
+request_timeout=int(os.getenv("LLM_TIMEOUT", "120"))
 
 # LLM Instructions
 instructions = """
@@ -102,7 +103,7 @@ User question: {user_input}
         turn = agent.create_turn(
             session_id=session_id,
             messages=[{"role": "user", "content": full_prompt}],
-            stream=True,
+            stream=True
         )
 
         for log in EventLogger().log(turn):
@@ -130,12 +131,14 @@ User question: {user_input}
 
         # Final answer parsing
         st.markdown("### Final Answer")
-        final_match = re.search(r'Response:\s*(\{.*\})', full_response, re.DOTALL)
+        final_match = re.search(r'Response:\\s*(\\{.*\\})', full_response, re.DOTALL)
         if final_match:
+            raw_json = final_match.group(1)
             try:
-                parsed_json = json.loads(final_match.group(1))
-                st.json(parsed_json)
+                parsed = json.loads(raw_json)
+                pretty = json.dumps(parsed, indent=2)
+                st.markdown(f"<pre>{pretty}</pre>", unsafe_allow_html=True)
             except json.JSONDecodeError:
-                st.write(final_match.group(1))
+                st.write(raw_json)
         else:
             st.info("Could not extract a clear final answer. Please check the LLM response.")
