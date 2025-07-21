@@ -4,14 +4,11 @@ import numpy as np
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client import LlamaStackClient
-import argparse
 import logging
 import os
 from dotenv import load_dotenv
-import psycopg2
 import json
 from schema_rag import get_schema_context
-import time
 import re
 
 # Streamlit Page Config
@@ -29,28 +26,23 @@ formatter = logging.Formatter('%(message)s')
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
-# Args
-parser = argparse.ArgumentParser()
-parser.add_argument("-r", "--remote", help="Use remote LlamaStack server", action="store_true")
-parser.add_argument("-s", "--session-info-on-exit", help="Print agent session info on exit", action="store_true")
-parser.add_argument("-a", "--auto", help="Run preset examples automatically", action="store_true")
-args = parser.parse_args()
-
 # Load .env and Connect
 load_dotenv()
-base_url = os.getenv("REMOTE_BASE_URL") if args.remote else "http://localhost:8321"
+base_url = os.getenv("BASE_URL")
 client = LlamaStackClient(base_url=base_url)
-logger.info(f" Connected to Llama Stack server @ {base_url}")
+request_timeout=int(os.getenv("LLM_TIMEOUT", "120"))
 
 # LLM Instructions
 instructions = """
 You are a SQL query expert for the CHAOSS Augur PostgreSQL database.
 You must always call the `execute_query()` tool
+Whenever the user asks about contributor affiliations—keywords like “company,” “affiliation,” “Red Hat,” “domain,” etc.—you must call the get_contributor_affiliations function instead of generating SQL yourself.
 TASK:
 - Convert the user's natural language input into a valid SQL query using only the provided schema context.
 - Use only the `execute_query(sql="...")` tool to run the query.
 - If a project is mentioned by name (e.g. "augur"), first retrieve its `repo_id` using:
    SELECT repo_id FROM augur_data.repo WHERE repo_name = 'repo_name'
+- Join tables on `repo_id`
 
 CONTEXT:
 - For each user input, you will receive a relevant subset of the database (tables + columns)
@@ -111,7 +103,7 @@ User question: {user_input}
         turn = agent.create_turn(
             session_id=session_id,
             messages=[{"role": "user", "content": full_prompt}],
-            stream=True,
+            stream=True
         )
 
         for log in EventLogger().log(turn):
@@ -139,12 +131,14 @@ User question: {user_input}
 
         # Final answer parsing
         st.markdown("### Final Answer")
-        final_match = re.search(r'Response:\s*(\{.*\})', full_response, re.DOTALL)
+        final_match = re.search(r'Response:\\s*(\\{.*\\})', full_response, re.DOTALL)
         if final_match:
+            raw_json = final_match.group(1)
             try:
-                parsed_json = json.loads(final_match.group(1))
-                st.json(parsed_json)
+                parsed = json.loads(raw_json)
+                pretty = json.dumps(parsed, indent=2)
+                st.markdown(f"<pre>{pretty}</pre>", unsafe_allow_html=True)
             except json.JSONDecodeError:
-                st.write(final_match.group(1))
+                st.write(raw_json)
         else:
             st.info("Could not extract a clear final answer. Please check the LLM response.")

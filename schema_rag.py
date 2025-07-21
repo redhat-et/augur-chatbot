@@ -9,15 +9,14 @@ from typing import List, Tuple
 
 OLLAMA_URL = "http://localhost:11434/api/embeddings"
 MODEL_NAME = "nomic-embed-text"
-SCHEMA_PATH = "augur_schema.json"
-COLUMN_EMBED_PATH = "augur_column_embeddings.pkl"
+SCHEMA_PATH = "data/augur_schema.json"
+COLUMN_EMBED_PATH = "data/augur_column_embeddings.pkl"
 
 JOIN_PATHS = {
-    ("commits", "repo_id"): ["repo"],
-    ("commits", "cmt_ght_author_id"): ["contributors"],
-    ("pull_requests", "repo_id"): ["repo"],
-    ("issues", "repo_id"): ["repo"],
-    ("repo_info", "repo_id"): ["repo"]
+    ("commits",      "repo_id"): ["repo"],
+    ("repo_info",    "repo_id"): ["repo"],
+    ("repo_labor",   "repo_id"): ["repo"],
+    ("repo_groups",  "repo_id"): ["repo"]
 }
 
 # Get column meaning based on suffix
@@ -27,8 +26,6 @@ def infer_column_meaning(column_name: str, table_name: str) -> str:
         r'.*_id$': 'unique identifier',
         r'repo_id': 'repository identifier (join with repo)',
         r'cmt_ght_author_id': 'commit author (join with contributors)',
-        r'pull_request_id': 'pull request identifier (join with pull_requests)',
-        r'.*_at$': 'timestamp when event occurred',
         r'repo_name': 'repository name'
     }
     for pattern, description in patterns.items():
@@ -99,10 +96,14 @@ def get_schema_context(query: str) -> str:
 ## identifies relevant list of columns for selected tables
 
     table_column_map = {table: [] for table in selected_tables}
+    for t in list(table_column_map.keys()):
+        cols = table_column_map[t]
+        # Keep only the top 3 semantically relevant columns
+        table_column_map[t] = cols[:3]
     filtered_keys = [key for _, key, _, _ in filtered]
     filtered_embs = [vec for _, _, _, vec in filtered]
 # Using cosine similarity, find the top 15 relevant cols to user query
-    col_knn = NearestNeighbors(n_neighbors=min(15, len(filtered_embs)), metric="cosine")
+    col_knn = NearestNeighbors(n_neighbors=min(10, len(filtered_embs)), metric="cosine")
     col_knn.fit(filtered_embs)
     _, col_indices = col_knn.kneighbors([query_embedding])
 
@@ -143,7 +144,7 @@ if __name__ == "__main__":
         embed_and_save()
     elif len(sys.argv) > 2 and sys.argv[1] == "ask":
         query = " ".join(sys.argv[2:])
-        print("\n🔍 Simulating retrieval for:", query)
+        print("\n Simulating retrieval for:", query)
         print("\n" + get_schema_context(query))
     else:
         print("Usage:")

@@ -18,6 +18,12 @@
           "description": "GitHub URL of the repository",
           "aliases": ["repository url", "github link", "project url"],
           "patterns": ["repository links", "github urls"]
+        },
+        "repo_group_id": {
+          "type": "foreign_key",
+          "references": "repo_groups.repo_group_id",
+          "description": "links repository to its group",
+          "aliases": ["repo group id", "organization id"]
         }
       },
       "description": "Primary table containing metadata for each repository, including its name and URL. Use repo_id to join with related tables like commits, issues, and pull_requests.",
@@ -34,6 +40,32 @@
         "lookup": ["find repository", "search by name", "get repository details"],
         "listing": ["all repositories", "list projects", "show repos"],
         "filtering": ["repositories matching criteria", "projects with specific attributes"]
+      }
+    },
+    "repo_groups": {
+      "columns": {
+        "repo_group_id": {
+          "type": "identifier",
+          "description": "unique identifier for a repository group or organization",
+          "aliases": ["group id", "organization id"]
+        },
+        "rg_name": {
+          "type": "string",
+          "description": "name of the repository group or organization",
+          "aliases": ["group name", "organization name", "org name"],
+          "patterns": ["repositories by organization", "foundation projects"]
+        }
+      },
+      "description": "Table mapping repository groups or organizations to their human-readable names.",
+      "aliases": ["repo groups", "organizations", "foundations", "orgs"],
+      "common_questions": [
+        "list all organizations",
+        "repositories by organization",
+        "list repo groups"
+      ],
+      "query_patterns": {
+        "listing": ["list organizations", "show repo groups"],
+        "lookup": ["find organization", "search groups by name"]
       }
     },
     "commits": {
