@@ -14,19 +14,19 @@ This chatbot enhances connects with Augur by enabling users to ask questions in 
 To get started:
 1. **Clone the repo**
 ```bash
-   git clone https://github.com/redhat-et/augur-chatbot.git
-   cd augur-chatbot
+git clone https://github.com/redhat-et/augur-chatbot.git
+cd augur-chatbot
 ```
 2. **Create a virtual environment (recommended)**
 ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install --upgrade pip
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
 ```
 3. **Install Dependencies**
 Install dependencies from pyproject.toml:
 ```bash
-  pip install -e .
+pip install -e .
 ```
 4. **Create a .env file with your Augur Database credentials**
 You can either:
@@ -35,7 +35,7 @@ Spin up a local instance and populate it with repository data of your choosing.
 
 Create a .env file in the root directory by copying the example file. Then fill in your database credentials:
 ```bash
-  cp .env.example .env
+cp .env.example .env
 ```
 
 5. **Run LlamaStack and Ollama locally**
