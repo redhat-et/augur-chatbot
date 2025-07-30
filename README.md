@@ -39,7 +39,7 @@ Or, optionally plug in your own model url into the Makefile
 
 5. **Register the MCP tool server**
 ```bash
-python register_mcp.py
+uv run register_mcp.py
 ```
 
 6. **Start the MCP SQL Server**
