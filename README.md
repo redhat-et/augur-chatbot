@@ -49,7 +49,7 @@ make run_mcp
 
 7. **Run the Streamlit UI**
 ```bash
-streamlit run ui.py
+uv run streamlit run ui.py
 ```
 
 Once running, the chatbot can answer a wide range of schema-aware questions about the Augur database.
