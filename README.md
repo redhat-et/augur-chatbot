@@ -39,23 +39,33 @@ Create a .env file in the root directory by copying the example file. Then fill 
 cp .env.example .env
 ```
 
-5. **Run LlamaStack and Ollama locally**
+
+5. **Start your local model server**
+In a separate terminal, run
+```bash
+ollama serve
+```
+This will start a model server for your local ollama models that should remain running.
+
+If you are using your own, externally hosted model url, you can skip this step.
+
+6. **Run LlamaStack and Ollama locally**
 ```bash
 make setup_local
 ```
 Or, optionally plug in your own model url into the Makefile
 
-6. **Register the MCP tool server**
+7. **Register the MCP tool server**
 ```bash
 python register_mcp.py
 ```
 
-7. **Start the MCP SQL Server**
+8. **Start the MCP SQL Server**
 ```bash
 make run_mcp
 ```
 
-8. **Run the Streamlit UI**
+9. **Run the Streamlit UI**
 ```bash
 streamlit run ui.py
 ```
