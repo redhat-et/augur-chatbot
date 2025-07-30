@@ -12,7 +12,7 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      - ollama_data:/root/.ollama
+      - ~/.ollama:/root/.ollama:Z
     restart: unless-stopped
     networks:
       - ollama_net
@@ -24,7 +24,7 @@ services:
     ports:
       - "8321:8321"
     volumes:
-      - llama_data:/root/.llama
+      - ~/.llama:/root/.llama:Z
     environment:
       - INFERENCE_MODEL=llama3.2:3b-instruct-fp16
       # This hostname 'ollama' works because both services are on the same Docker network.
@@ -74,11 +74,6 @@ services:
     restart: unless-stopped
     networks:
       - ollama_net
-
-# Volumes to persist data for Ollama and LlamaStack
-volumes:
-  ollama_data:
-  llama_data:
 
 # Network to allow services to communicate with each other by name.
 networks:
