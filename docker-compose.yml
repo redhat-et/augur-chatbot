@@ -34,7 +34,7 @@ services:
       ollama:
         condition: service_healthy # Waits for the healthcheck to pass.
     volumes:
-      - ollama_data:/root/.ollama # Shares the same volume to access/store models.
+      - ~/.ollama:/root/.ollama:Z # Shares the same volume to access/store models.
     networks:
       - ollama_net
     restart: unless-stopped
