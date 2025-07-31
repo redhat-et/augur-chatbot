@@ -56,16 +56,6 @@ services:
     restart: unless-stopped
     networks:
       - ollama_net
-     # Healthcheck to ensure the LlamaStack service is ready before other services start.
-    healthcheck:
-      # This check attempts to hit a health endpoint. You may need to adjust the path
-      # (e.g., to /v1/health) depending on the LlamaStack distribution's API.
-      test: ["CMD", "curl", "-f", "http://localhost:8321/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s # Gives the container time to initialize before the first check.
-
 
   # MCP Registration Service: Builds from the root Dockerfile and runs the registration script.
   register_mcp:
@@ -73,8 +63,7 @@ services:
     container_name: register_mcp
     command: python /app/register_mcp.py
     depends_on:
-      llamastack:
-        condition: service_healthy
+      - llamastack
     restart: on-failure
     networks:
       - ollama_net
@@ -87,8 +76,7 @@ services:
     ports:
       - "9002:9002"
     depends_on:
-      llamastack:
-        condition: service_healthy
+      - llamastack
     restart: unless-stopped
     networks:
       - ollama_net
@@ -103,8 +91,7 @@ services:
     environment:
       - BASE_URL=http://llamastack:8321
     depends_on:
-      llamastack:
-        condition: service_healthy
+      - llamastack
     restart: unless-stopped
     networks:
       - ollama_net
