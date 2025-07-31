@@ -25,8 +25,7 @@ services:
     # It pulls the model (if not present) and keeps it in memory.
     command: ollama run llama3.2:3b-instruct-fp16 --keepalive 160m
     depends_on:
-      ollama:
-        condition: service_healthy # Waits for the healthcheck to pass.
+      - ollama
     volumes:
       - ~/.ollama:/root/.ollama:Z # Shares the same volume to access/store models.
     networks:
