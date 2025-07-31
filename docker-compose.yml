@@ -16,6 +16,12 @@ services:
     restart: unless-stopped
     networks:
       - ollama_net
+    # Healthcheck to ensure the Ollama server is running before other services try to use it.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   # LlamaStack Service: Provides the distribution layer.
   llamastack:
