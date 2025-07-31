@@ -1,6 +1,6 @@
 # docker-compose.yml
 # This file defines the multi-container application setup.
-# To run: docker-compose up --build
+# All Python services now build from the single Dockerfile in the root directory.
 
 version: '3.8'
 
@@ -27,26 +27,26 @@ services:
       - ~/.llama:/root/.llama:Z
     environment:
       - INFERENCE_MODEL=llama3.2:3b-instruct-fp16
-      # This hostname 'ollama' works because both services are on the same Docker network.
       - OLLAMA_URL=http://ollama:11434
+    # Now depends on the model loader, which in turn depends on ollama.
     depends_on:
       - ollama
     restart: unless-stopped
     networks:
       - ollama_net
 
-  # MCP Registration Service: Runs the registration script.
+  # MCP Registration Service: Builds from the root Dockerfile and runs the registration script.
   register_mcp:
     build: .
     container_name: register_mcp
     command: python /app/register_mcp.py
     depends_on:
-      - llamastack # Waits for llamastack to be healthy before starting.
+      - llamastack
     restart: on-failure
     networks:
       - ollama_net
 
-  # MCP Execution Service: Runs the Uvicorn server for the main application.
+  # MCP Execution Service: Builds from the root Dockerfile and runs the Uvicorn server.
   mcp_execute:
     build: .
     container_name: mcp_execute
@@ -59,15 +59,14 @@ services:
     networks:
       - ollama_net
 
-  # Streamlit UI Service: Runs the user interface.
+  # Streamlit UI Service: Builds from the root Dockerfile and runs the Streamlit app.
   streamlit_ui:
     build: .
     container_name: streamlit_ui
     command: streamlit run /app/ui.py --server.port=8501 --server.address=0.0.0.0
     ports:
-      - "8501:8501" # Default streamlit port
+      - "8501:8501"
     environment:
-      # The UI needs to know where the LlamaStack service is.
       - BASE_URL=http://llamastack:8321
     depends_on:
       - llamastack
