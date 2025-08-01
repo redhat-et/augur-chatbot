@@ -22,10 +22,12 @@ for replace_tool_id in tools_to_replace:
     client.toolgroups.unregister(toolgroup_id=replace_tool_id)
     print(f"Unregistered old tool {replace_tool_id}")
 
-client.toolgroups.register(
-    toolgroup_id="mcp::execute",
-    provider_id="model-context-protocol",
-    mcp_endpoint={"uri": os.getenv("EXECUTE_MCP_URI")},
-)
 
-print("✅ Registered custom MCP toolgroup at port 9002")
+for tool_id, tool_url in custom_tools.items():
+    client.toolgroups.register(
+        toolgroup_id=tool_id,
+        provider_id="model-context-protocol",
+        mcp_endpoint={"uri": tool_url},
+    )
+
+    print(f"✅ Registered custom MCP toolgroup {tool_id} at {tool_url}")
