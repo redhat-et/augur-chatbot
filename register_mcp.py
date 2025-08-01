@@ -9,6 +9,10 @@ load_dotenv()
 base_url = os.getenv("BASE_URL", "http://localhost:8321")
 client = LlamaStackClient(base_url = base_url)
 
+for tool in client.toolgroups.list():
+    if "builtin" not in tool.identifier:
+        client.toolgroups.unregister(toolgroup_id=tool.identifier)
+        print(f"unregistered {tool.identifier}")
 
 
 
