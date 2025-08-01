@@ -9,21 +9,9 @@ load_dotenv()
 base_url = os.getenv("BASE_URL", "http://localhost:8321")
 client = LlamaStackClient(base_url = base_url)
 
-client.toolgroups.register(
-    toolgroup_id="mcp::postgres",
-    provider_id="model-context-protocol",
-    mcp_endpoint={"uri": os.getenv("POSTGRES_MCP_URI")},
-)
 
-print("✅ Registered mcp::postgres via host.containers.internal:8000")
 
-client.toolgroups.register(
-    toolgroup_id="mcp::sql",
-    provider_id="model-context-protocol",
-    mcp_endpoint={"uri": os.getenv("SQL_MCP_URI")},
-)
 
-print("✅ Registered custom MCP toolgroup at port 9001")
 
 client.toolgroups.register(
     toolgroup_id="mcp::execute",
