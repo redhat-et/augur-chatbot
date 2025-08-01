@@ -9,13 +9,18 @@ load_dotenv()
 base_url = os.getenv("BASE_URL", "http://localhost:8321")
 client = LlamaStackClient(base_url = base_url)
 
-for tool in client.toolgroups.list():
-    if "builtin" not in tool.identifier:
-        client.toolgroups.unregister(toolgroup_id=tool.identifier)
-        print(f"unregistered {tool.identifier}")
+custom_tools = {
+    "mcp::execute": os.getenv("EXECUTE_MCP_URI")
+}
 
 
+existing_tool_identifiers = list(map(lambda t: t.identifier, client.toolgroups.list()))
+new_tool_identifiers = custom_tools.keys()
 
+tools_to_replace = set(existing_tool_identifiers).intersection(set(new_tool_identifiers))
+for replace_tool_id in tools_to_replace:
+    client.toolgroups.unregister(toolgroup_id=replace_tool_id)
+    print(f"Unregistered old tool {replace_tool_id}")
 
 client.toolgroups.register(
     toolgroup_id="mcp::execute",
