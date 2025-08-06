@@ -13,6 +13,10 @@ dependencies = [
     "geocoder>=1.38.1",
     "llama-stack==0.2.7",
     "scipy>=1.15.2",
+    "httpx>=0.28.1",
+    "psycopg2-binary>=2.9.10",
+    "scikit-learn>=1.7.1",
+    "mcp-server>=0.1.4",
 ]
 
 [tool.uv.workspace]
