@@ -8,3 +8,7 @@ setup_local:
 	--port 8321 \
 	--env INFERENCE_MODEL="llama3.2:3b-instruct-fp16" \
 	--env OLLAMA_URL=http://host.containers.internal:11434
+
+pull_models:
+	ollama pull nomic-embed-text
+	ollama pull llama3.2:3b-instruct-fp16

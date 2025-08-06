@@ -32,7 +32,7 @@ cp .env.example .env
 ```
 
 5. **Pull the models**
-To ensure the models are downloaded and ready to go, run the following commands:
+To ensure the models are downloaded and ready to go, run `make pull_models` or run the following commands:
 ```
 ollama pull nomic-embed-text
 ollama pull llama3.2:3b-instruct-fp16
