@@ -12,6 +12,6 @@ pull_models:
 	ollama pull nomic-embed-text
 	ollama pull llama3.2:3b-instruct-fp16
 
-# setup process for the container based workflow
+# This is designed for the container-based workflow
 register_mcp:
 	EXECUTE_MCP_URI=http://mcp_execute:9002/sse uv run register_mcp.py
