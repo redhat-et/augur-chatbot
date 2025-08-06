@@ -42,6 +42,7 @@ services:
     build: .
     container_name: register_mcp
     command: python /app/register_mcp.py
+    env_file: .env
     depends_on:
       - llamastack
     restart: on-failure
@@ -53,6 +54,7 @@ services:
     build: .
     container_name: mcp_execute
     command: uvicorn mcp_execute:app --host 0.0.0.0 --port 9002 --app-dir /app
+    env_file: .env
     ports:
       - "9002:9002"
     depends_on:
