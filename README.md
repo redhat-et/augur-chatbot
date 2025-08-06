@@ -21,9 +21,6 @@ git clone https://github.com/redhat-et/augur-chatbot.git
 cd augur-chatbot
 ```
 2. **Create a .env file with your Augur Database credentials**
-run `uv sync` to pull down python dependencies. If you dont have the `uv` dependency management tool for python, make sure its installed.
-
-3. **Create a .env file with your Augur Database credentials**
 You can either:
 Connect to an existing Augur instance (e.g., with replica data), or
 Spin up a local instance and populate it with repository data of your choosing.
@@ -41,34 +38,12 @@ ollama pull llama3.2:3b-instruct-fp16
 ```
 This will require ~ 7GB of free space on your machine.
 
-6. **Start your local model server**
-In a separate terminal, run
-```bash
-ollama serve
-```
-This will start a model server for your local ollama models that should remain running.
+6. **Start the chatbot stack**
+Run `podman compose up --build` to pull or build the relevant containers and bring the chatbot stack up.
 
-If you are using your own, externally hosted model url, you can skip this step.
+7. **Register the MCP tool server**
+If this is the first time running the chatbot, run `make register_mcp` with the chatbot stack running - this will tell llamastack about the custom MCP server this chatbot uses to execute SQL.
 
-7. **Run LlamaStack and Ollama locally**
-```bash
-make setup_local
-```
-Or, optionally plug in your own model url into the Makefile
-
-8. **Register the MCP tool server**
-```bash
-uv run register_mcp.py
-```
-
-9. **Start the MCP SQL Server**
-```bash
-make run_mcp
-```
-10. **Run the Streamlit UI**
-```bash
-uv run streamlit run ui.py
-```
 
 Once running, the chatbot can answer a wide range of schema-aware questions about the Augur database.
 Instructions for use:
