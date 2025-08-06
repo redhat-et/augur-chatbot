@@ -18,18 +18,10 @@ To get started:
 git clone https://github.com/redhat-et/augur-chatbot.git
 cd augur-chatbot
 ```
-2. **Create a virtual environment (recommended)**
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-```
-3. **Install Dependencies**
-Install dependencies from pyproject.toml:
-```bash
-pip install -e .
-```
-4. **Create a .env file with your Augur Database credentials**
+2. **Create a .env file with your Augur Database credentials**
+run `uv sync` to pull down python dependencies. If you dont have the `uv` dependency management tool for python, make sure its installed.
+
+3. **Create a .env file with your Augur Database credentials**
 You can either:
 Connect to an existing Augur instance (e.g., with replica data), or
 Spin up a local instance and populate it with repository data of your choosing.
@@ -64,17 +56,16 @@ Or, optionally plug in your own model url into the Makefile
 
 8. **Register the MCP tool server**
 ```bash
-python register_mcp.py
+uv run register_mcp.py
 ```
 
 9. **Start the MCP SQL Server**
 ```bash
 make run_mcp
 ```
-
 10. **Run the Streamlit UI**
 ```bash
-streamlit run ui.py
+uv run streamlit run ui.py
 ```
 
 Once running, the chatbot can answer a wide range of schema-aware questions about the Augur database.
