@@ -9,26 +9,25 @@ load_dotenv()
 base_url = os.getenv("BASE_URL", "http://localhost:8321")
 client = LlamaStackClient(base_url = base_url)
 
-client.toolgroups.register(
-    toolgroup_id="mcp::postgres",
-    provider_id="model-context-protocol",
-    mcp_endpoint={"uri": os.getenv("POSTGRES_MCP_URI")},
-)
+custom_tools = {
+    "mcp::execute": os.getenv("EXECUTE_MCP_URI")
+}
 
-print("✅ Registered mcp::postgres via host.containers.internal:8000")
 
-client.toolgroups.register(
-    toolgroup_id="mcp::sql",
-    provider_id="model-context-protocol",
-    mcp_endpoint={"uri": os.getenv("SQL_MCP_URI")},
-)
+existing_tool_identifiers = list(map(lambda t: t.identifier, client.toolgroups.list()))
+new_tool_identifiers = custom_tools.keys()
 
-print("✅ Registered custom MCP toolgroup at port 9001")
+tools_to_replace = set(existing_tool_identifiers).intersection(set(new_tool_identifiers))
+for replace_tool_id in tools_to_replace:
+    client.toolgroups.unregister(toolgroup_id=replace_tool_id)
+    print(f"Unregistered old tool {replace_tool_id}")
 
-client.toolgroups.register(
-    toolgroup_id="mcp::execute",
-    provider_id="model-context-protocol",
-    mcp_endpoint={"uri": os.getenv("EXECUTE_MCP_URI")},
-)
 
-print("✅ Registered custom MCP toolgroup at port 9002")
+for tool_id, tool_url in custom_tools.items():
+    client.toolgroups.register(
+        toolgroup_id=tool_id,
+        provider_id="model-context-protocol",
+        mcp_endpoint={"uri": tool_url},
+    )
+
+    print(f"✅ Registered custom MCP toolgroup {tool_id} at {tool_url}")
