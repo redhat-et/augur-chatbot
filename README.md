@@ -7,6 +7,7 @@ This chatbot enhances connects with Augur by enabling users to ask questions in 
 ---
 ## Requirements
 - Python 3.10+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) python dependency manager
 - [Ollama](https://ollama.com/) (for running LLaMA models locally)
 - [Podman](https://podman.io/) (or Docker)
 - Podman compose (or Docker compose)
