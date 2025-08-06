@@ -72,6 +72,7 @@ services:
       - "8501:8501"
     environment:
       - BASE_URL=http://llamastack:8321
+      - OLLAMA_URL=http://ollama:11434/api/embeddings
     depends_on:
       - llamastack
     restart: unless-stopped
