@@ -9,6 +9,7 @@ This chatbot enhances connects with Augur by enabling users to ask questions in 
 - Python 3.10+
 - [Ollama](https://ollama.com/) (for running LLaMA models locally)
 - [Podman](https://podman.io/) (or Docker)
+- Podman compose (or Docker compose)
 - A running [Augur](https://github.com/chaoss/augur) PostgreSQL database and credentials to access it
 
 ## Setup
