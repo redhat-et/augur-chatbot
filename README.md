@@ -31,23 +31,39 @@ Create a .env file in the root directory by copying the example file. Then fill 
 cp .env.example .env
 ```
 
-4. **Run LlamaStack and Ollama locally**
+5. **Pull the models**
+To ensure the models are downloaded and ready to go, run the following commands:
+```
+ollama pull nomic-embed-text
+ollama pull llama3.2:3b-instruct-fp16
+```
+This will require ~ 7GB of free space on your machine.
+
+6. **Start your local model server**
+In a separate terminal, run
+```bash
+ollama serve
+```
+This will start a model server for your local ollama models that should remain running.
+
+If you are using your own, externally hosted model url, you can skip this step.
+
+7. **Run LlamaStack and Ollama locally**
 ```bash
 make setup_local
 ```
 Or, optionally plug in your own model url into the Makefile
 
-5. **Register the MCP tool server**
+8. **Register the MCP tool server**
 ```bash
 uv run register_mcp.py
 ```
 
-6. **Start the MCP SQL Server**
+9. **Start the MCP SQL Server**
 ```bash
 make run_mcp
 ```
-
-7. **Run the Streamlit UI**
+10. **Run the Streamlit UI**
 ```bash
 uv run streamlit run ui.py
 ```
