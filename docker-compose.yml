@@ -19,21 +19,6 @@ services:
     networks:
       - ollama_net
 
-  # New Service to pull and load the model on startup.
-  ollama_model_loader:
-    image: ollama/ollama
-    container_name: ollama_model_loader
-    # This command runs after the ollama service is healthy.
-    # It pulls the model (if not present) and keeps it in memory.
-    command: ollama run llama3.2:3b-instruct-fp16 --keepalive 160m
-    depends_on:
-      - ollama
-    volumes:
-      - ~/.ollama:/root/.ollama:Z # Shares the same volume to access/store models.
-    networks:
-      - ollama_net
-    restart: unless-stopped
-
   # LlamaStack Service: Provides the distribution layer.
   llamastack:
     image: llamastack/distribution-ollama:0.2.9
@@ -47,7 +32,7 @@ services:
       - OLLAMA_URL=http://ollama:11434
     # Now depends on the model loader, which in turn depends on ollama.
     depends_on:
-      - ollama_model_loader
+      - ollama
     restart: unless-stopped
     networks:
       - ollama_net
