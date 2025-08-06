@@ -45,6 +45,13 @@ Run `podman compose up --build` to pull or build the relevant containers and bri
 If this is the first time running the chatbot, run `make register_mcp` with the chatbot stack running - this will tell llamastack about the custom MCP server this chatbot uses to execute SQL.
 
 
+### Manual Setup
+
+A more manual setup process is documented in [docs/manual_setup.md](./docs/manual_setup.md) if you prefer to get really in the weeds or are familiar with how AI agents are setup
+
+
+## Usage
+
 Once running, the chatbot can answer a wide range of schema-aware questions about the Augur database.
 Instructions for use:
 - Repos, projects, and repo groups are indexed through a unique `repo_id` or `repo_group_id`. You should ask Augur Assistant the id for your intended project and use that in subsequent queries
