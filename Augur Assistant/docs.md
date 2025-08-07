@@ -31,8 +31,7 @@ goals of the tool are as follows:
 |  Data Source           |  Postgres Augur DB                  |  <br> Read-only use of Augur DB<br> <br>Connects via .env variables and database credentials                                                                                     |
 |  Frontend              |  Streamlit UI                       |  <br> Optional SQL toggle and debug trace<br> <br>Regex-driven parsing to render JSON results as clean text                                                                      |
 
-![CHATBOT SCHEMA - Page 1.jpeg](./Architecture Diagram.png){width="10.191686351706037in" height="5.78417104111986in"}
-
+![CHATBOT SCHEMA - Page 1.jpeg](./Architecture%20Diagram.png)
 
 ### Future planning:
 
