@@ -66,9 +66,8 @@ goals of the tool are as follows:
 |             |                    |     text                          |
 +-------------+--------------------+-----------------------------------+
 
-![CHATBOT SCHEMA - Page
-1.jpeg](media/image1.jpg){width="10.191686351706037in"
-height="5.78417104111986in"}
+![CHATBOT SCHEMA - Page 1.jpeg](./Architecture Diagram.png){width="10.191686351706037in" height="5.78417104111986in"}
+
 
 ### Future planning:
 
