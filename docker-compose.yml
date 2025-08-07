@@ -1,0 +1,85 @@
+# docker-compose.yml
+# This file defines the multi-container application setup.
+# All Python services now build from the single Dockerfile in the root directory.
+
+version: '3.8'
+
+services:
+  # Ollama Service: Runs the core Ollama model server.
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+    ports:
+      - "11434:11434"
+    volumes:
+      - ~/.ollama:/root/.ollama:Z
+    restart: unless-stopped
+    networks:
+      - ollama_net
+
+  # LlamaStack Service: Provides the distribution layer.
+  llamastack:
+    image: llamastack/distribution-ollama:0.2.9
+    container_name: llamastack
+    ports:
+      - "8321:8321"
+    volumes:
+      - ~/.llama:/root/.llama:Z
+    environment:
+      - INFERENCE_MODEL=llama3.2:3b-instruct-fp16
+      - OLLAMA_URL=http://ollama:11434
+    # Now depends on the model loader, which in turn depends on ollama.
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    networks:
+      - ollama_net
+
+  # MCP Registration Service: Builds from the root Dockerfile and runs the registration script.
+  register_mcp:
+    build: .
+    container_name: register_mcp
+    command: python /app/register_mcp.py
+    env_file: .env
+    depends_on:
+      - llamastack
+    restart: on-failure
+    networks:
+      - ollama_net
+
+  # MCP Execution Service: Builds from the root Dockerfile and runs the Uvicorn server.
+  mcp_execute:
+    build: .
+    container_name: mcp_execute
+    command: uvicorn mcp_execute:app --host 0.0.0.0 --port 9002 --app-dir /app
+    env_file: .env
+    ports:
+      - "9002:9002"
+    depends_on:
+      - llamastack
+    restart: unless-stopped
+    networks:
+      - ollama_net
+
+  # Streamlit UI Service: Builds from the root Dockerfile and runs the Streamlit app.
+  streamlit_ui:
+    build: .
+    container_name: streamlit_ui
+    command: streamlit run /app/ui.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      - BASE_URL=http://llamastack:8321
+      - OLLAMA_URL=http://ollama:11434/api/embeddings
+    depends_on:
+      - llamastack
+    restart: unless-stopped
+    networks:
+      - ollama_net
+
+# Network to allow services to communicate with each other by name.
+networks:
+  ollama_net:
+    driver: bridge

@@ -6,8 +6,11 @@ import requests
 import re
 from sklearn.neighbors import NearestNeighbors
 from typing import List, Tuple
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
-OLLAMA_URL = "http://localhost:11434/api/embeddings"
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/embeddings")
 MODEL_NAME = "nomic-embed-text"
 SCHEMA_PATH = "data/augur_schema.json"
 COLUMN_EMBED_PATH = "data/augur_column_embeddings.pkl"

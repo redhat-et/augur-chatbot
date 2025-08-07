@@ -7,9 +7,11 @@ This chatbot enhances connects with Augur by enabling users to ask questions in 
 ---
 ## Requirements
 - Python 3.10+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) python dependency manager
 - [Ollama](https://ollama.com/) (for running LLaMA models locally)
 - [Podman](https://podman.io/) (or Docker)
-- A running Augur PostgreSQL database and credentials
+- Podman compose (or Docker compose)
+- A running [Augur](https://github.com/chaoss/augur) PostgreSQL database and credentials to access it
 
 ## Setup
 To get started:
@@ -19,9 +21,6 @@ git clone https://github.com/redhat-et/augur-chatbot.git
 cd augur-chatbot
 ```
 2. **Create a .env file with your Augur Database credentials**
-run `uv sync` to pull down python dependencies. If you dont have the `uv` dependency management tool for python, make sure its installed.
-
-3. **Create a .env file with your Augur Database credentials**
 You can either:
 Connect to an existing Augur instance (e.g., with replica data), or
 Spin up a local instance and populate it with repository data of your choosing.
@@ -32,41 +31,26 @@ cp .env.example .env
 ```
 
 5. **Pull the models**
-To ensure the models are downloaded and ready to go, run the following commands:
+To ensure the models are downloaded and ready to go, run `make pull_models` or run the following commands:
 ```
 ollama pull nomic-embed-text
 ollama pull llama3.2:3b-instruct-fp16
 ```
 This will require ~ 7GB of free space on your machine.
 
-6. **Start your local model server**
-In a separate terminal, run
-```bash
-ollama serve
-```
-This will start a model server for your local ollama models that should remain running.
+6. **Start the chatbot stack**
+Run `podman compose up --build` to pull or build the relevant containers and bring the chatbot stack up.
 
-If you are using your own, externally hosted model url, you can skip this step.
+7. **Register the MCP tool server**
+If this is the first time running the chatbot, run `make register_mcp` with the chatbot stack running - this will tell llamastack about the custom MCP server this chatbot uses to execute SQL.
 
-7. **Run LlamaStack and Ollama locally**
-```bash
-make setup_local
-```
-Or, optionally plug in your own model url into the Makefile
 
-8. **Register the MCP tool server**
-```bash
-uv run register_mcp.py
-```
+### Manual Setup
 
-9. **Start the MCP SQL Server**
-```bash
-make run_mcp
-```
-10. **Run the Streamlit UI**
-```bash
-uv run streamlit run ui.py
-```
+A more manual setup process is documented in [docs/manual_setup.md](./docs/manual_setup.md) if you prefer to get really in the weeds or are familiar with how AI agents are setup
+
+
+## Usage
 
 Once running, the chatbot can answer a wide range of schema-aware questions about the Augur database.
 Instructions for use:
