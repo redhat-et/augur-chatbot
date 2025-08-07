@@ -1,7 +1,6 @@
 Sahana Sreeram - Software Engineering Intern
 
-Working Repo:
-[[https://github.com/redhat-et/augur-chatbot]{.underline}](https://github.com/redhat-et/augur-chatbot)
+Working Repo: https://github.com/redhat-et/augur-chatbot
 
 ### Background & Motivation
 
